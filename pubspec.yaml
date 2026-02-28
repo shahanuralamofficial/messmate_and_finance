@@ -1,0 +1,63 @@
+name: finance_manager
+description: "A complete finance manager app with Firebase"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.10.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^3.10.1
+  firebase_auth: ^5.4.4
+  cloud_firestore: ^5.6.2
+  firebase_storage: ^12.4.3
+
+  # State Management
+  provider: ^6.1.2
+
+  # Local Storage
+  shared_preferences: ^2.5.2
+
+  # UI
+  fl_chart: ^0.70.2
+  image_picker: ^1.1.2
+  local_auth: ^2.3.0
+  flutter_svg: ^2.0.17
+  animations: ^2.0.11
+
+  # Utilities
+  path: ^1.9.1
+  uuid: ^4.5.1
+  connectivity_plus: ^6.1.3
+  path_provider: ^2.1.2
+  share_plus: ^10.1.0
+  pdf: ^3.10.8
+  printing: ^5.12.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+# Icon Configuration - Placed at the end for clarity
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
