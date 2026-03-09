@@ -1,6 +1,7 @@
 class MessMember {
   final String id;
-  final String userId; // The Mess Manager's ID (who created the mess)
+  final String userId; // The Manager's ID
+  final String messId; // The ID of the mess this member belongs to
   final String? appUserId; // If the member is also an app user, their UID
   final String name;
   final String? email; // For connecting with app users
@@ -15,6 +16,8 @@ class MessMember {
   final double otherBills;
   final double previousDue;
   final bool isPaid;
+  final String paymentStatus; // 'unpaid', 'pending', 'confirmed'
+  final String? paymentMethod; // 'Cash', 'bKash', etc.
   
   final bool isManager;
   final bool isAppUser;
@@ -22,6 +25,7 @@ class MessMember {
   MessMember({
     required this.id,
     required this.userId,
+    required this.messId,
     this.appUserId,
     required this.name,
     this.email,
@@ -34,6 +38,8 @@ class MessMember {
     this.otherBills = 0.0,
     this.previousDue = 0.0,
     this.isPaid = false,
+    this.paymentStatus = 'unpaid',
+    this.paymentMethod,
     this.isManager = false,
     this.isAppUser = false,
   });
@@ -42,6 +48,7 @@ class MessMember {
     return {
       'id': id,
       'userId': userId,
+      'messId': messId,
       'appUserId': appUserId,
       'name': name,
       'email': email,
@@ -54,6 +61,8 @@ class MessMember {
       'otherBills': otherBills,
       'previousDue': previousDue,
       'isPaid': isPaid,
+      'paymentStatus': paymentStatus,
+      'paymentMethod': paymentMethod,
       'isManager': isManager,
       'isAppUser': isAppUser,
     };
@@ -63,6 +72,7 @@ class MessMember {
     return MessMember(
       id: map['id'] ?? '',
       userId: map['userId'] ?? '',
+      messId: map['messId'] ?? '',
       appUserId: map['appUserId'],
       name: map['name'] ?? '',
       email: map['email'],
@@ -75,6 +85,8 @@ class MessMember {
       otherBills: (map['otherBills'] ?? 0.0).toDouble(),
       previousDue: (map['previousDue'] ?? 0.0).toDouble(),
       isPaid: map['isPaid'] ?? false,
+      paymentStatus: map['paymentStatus'] ?? 'unpaid',
+      paymentMethod: map['paymentMethod'],
       isManager: map['isManager'] ?? false,
       isAppUser: map['isAppUser'] ?? false,
     );
@@ -96,10 +108,14 @@ class MessMember {
     bool? isAppUser,
     String? appUserId,
     String? userId,
+    String? messId,
+    String? paymentStatus,
+    String? paymentMethod,
   }) {
     return MessMember(
       id: id,
       userId: userId ?? this.userId,
+      messId: messId ?? this.messId,
       appUserId: appUserId ?? this.appUserId,
       name: name ?? this.name,
       email: email ?? this.email,
@@ -112,6 +128,8 @@ class MessMember {
       otherBills: otherBills ?? this.otherBills,
       previousDue: previousDue ?? this.previousDue,
       isPaid: isPaid ?? this.isPaid,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       isManager: isManager ?? this.isManager,
       isAppUser: isAppUser ?? this.isAppUser,
     );

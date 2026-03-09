@@ -11,6 +11,7 @@ import '../models/mess_meal.dart';
 import '../models/mess_market_expense.dart';
 import '../models/mess_action_log.dart';
 import '../models/mess_meal_plan.dart';
+import '../models/mess_info.dart';
 import '../models/budget.dart';
 import '../models/debt.dart';
 import '../models/savings_goal.dart';
@@ -28,6 +29,7 @@ class FinanceProvider extends ChangeNotifier {
   List<MessMarketExpense> _messMarketExpenses = [];
   List<MessActionLog> _messLogs = [];
   List<MessMealPlan> _messMealPlans = [];
+  MessInfo? _messInfo;
   
   // New Lists
   List<Budget> _budgets = [];
@@ -63,6 +65,7 @@ class FinanceProvider extends ChangeNotifier {
   List<MessMarketExpense> get messMarketExpenses => _messMarketExpenses;
   List<MessActionLog> get messLogs => _messLogs;
   List<MessMealPlan> get messMealPlans => _messMealPlans;
+  MessInfo? get messInfo => _messInfo;
   
   List<Budget> get budgets => _budgets;
   List<Debt> get debts => _debts;
@@ -324,8 +327,73 @@ class FinanceProvider extends ChangeNotifier {
   }
 
   // Mess Management Methods
-  Future<void> addMessMember(MessMember member) async {
-    await _firestore.collection('users').doc(member.userId).collection('mess_members').doc(member.id).set(member.toMap());
+  Future<void> addMessMember(String managerId, String name, double deposit) async {
+    final id = const Uuid().v4();
+    final member = MessMember(
+      id: id,
+      userId: managerId,
+      messId: managerId,
+      name: name,
+      initialDeposit: deposit,
+      isManager: false,
+    );
+    await _firestore.collection('users').doc(managerId).collection('mess_members').doc(id).set(member.toMap());
+    await _addMessLog(managerId, managerId, 'Manager', 'Member Added', 'Added member: $name');
+  }
+
+  Future<void> addMeal(String managerId, String memberId, double count) async {
+    final id = const Uuid().v4();
+    final meal = MessMeal(
+      id: id,
+      userId: managerId,
+      memberId: memberId,
+      date: DateTime.now(),
+      count: count,
+    );
+    
+    final batch = _firestore.batch();
+    batch.set(_firestore.collection('users').doc(managerId).collection('mess_meals').doc(id), meal.toMap());
+    batch.update(_firestore.collection('users').doc(managerId).collection('mess_members').doc(memberId), {
+      'totalMeals': FieldValue.increment(count)
+    });
+    
+    await batch.commit();
+  }
+
+  Future<void> updateMemberBills(String managerId, String memberId, double rent, double wifi, double elect) async {
+    await _firestore.collection('users').doc(managerId).collection('mess_members').doc(memberId).update({
+      'monthlyRent': rent,
+      'wifiBill': wifi,
+      'electricityBill': elect,
+    });
+  }
+
+  Future<void> updateMessInfo(String name, String address, String phone) async {
+    if (_messMembers.isEmpty) return;
+    final managerId = _messMembers.firstWhere((m) => m.isManager).userId;
+    
+    final info = MessInfo(
+      id: 'details',
+      name: name,
+      address: address,
+      ownerPhone: phone,
+    );
+    
+    await _firestore.collection('users').doc(managerId).collection('mess_info').doc('details').set(info.toMap());
+  }
+
+  Future<void> _addMessLog(String userId, String actorId, String actorName, String action, String details) async {
+    final logId = const Uuid().v4();
+    final log = MessActionLog(
+      id: logId,
+      messId: userId,
+      actorId: actorId,
+      actorName: actorName,
+      action: action,
+      details: details,
+      timestamp: DateTime.now(),
+    );
+    await _firestore.collection('users').doc(userId).collection('mess_logs').doc(logId).set(log.toMap());
   }
 
   Future<void> updateMessMember(MessMember member) async {
