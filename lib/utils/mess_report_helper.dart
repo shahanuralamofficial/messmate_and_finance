@@ -115,7 +115,8 @@ class MessReportHelper {
       </table>
 
       <div class="footer">
-        <div class="app-branding">
+        <div class="app-branding" style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+          <img src="https://cdn-icons-png.flaticon.com/512/2830/2830305.png" style="height: 20px; width: 20px;">
           <span>Powered by <strong>Messmate & Finance Manager</strong></span>
         </div>
         <p>© ${DateTime.now().year} All Rights Reserved. Generated for transparent mess management.</p>
