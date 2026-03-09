@@ -402,6 +402,10 @@ class QuickAddSheet extends StatelessWidget {
                   Navigator.pop(context);
                   Navigator.pushNamed(context, '/notes');
                 }, isDark),
+                _buildQuickAction(context, Icons.group_add_rounded, Colors.indigoAccent, isBangla ? 'মেস' : 'Mess', () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/mess');
+                }, isDark),
               ],
             ),
           ],

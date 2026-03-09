@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppConstants {
-  static const String appName = 'Finance Manager';
+  static const String appName = 'MessMate & Finance';
 
   // Changed to keys for localization
   static const List<String> categories = [

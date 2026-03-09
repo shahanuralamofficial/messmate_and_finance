@@ -17,6 +17,13 @@ import 'screens/profile_screen.dart';
 import 'screens/reports_screen.dart';
 import 'screens/market_screen.dart';
 import 'screens/notes_screen.dart';
+import 'screens/mess_screen.dart';
+import 'screens/tools_screen.dart';
+import 'screens/budget_screen.dart';
+import 'screens/debts_screen.dart';
+import 'screens/savings_screen.dart';
+import 'screens/security_screen.dart';
+import 'screens/recurring_screen.dart';
 import 'firebase_options.dart'; 
 
 void main() async {
@@ -79,6 +86,13 @@ class MyApp extends StatelessWidget {
               '/reports': (ctx) => const ReportsScreen(),
               '/market': (ctx) => const MarketScreen(),
               '/notes': (ctx) => const NotesScreen(),
+              '/mess': (ctx) => const MessScreen(),
+              '/tools': (ctx) => const ToolsScreen(),
+              '/budgets': (ctx) => const BudgetScreen(),
+              '/debts': (ctx) => const DebtsScreen(),
+              '/savings': (ctx) => const SavingsScreen(),
+              '/security': (ctx) => const SecurityScreen(),
+              '/recurring': (ctx) => const RecurringScreen(),
               '/transactions': (ctx) => const Scaffold(body: Center(child: Text('Transactions Screen'))),
             },
           );

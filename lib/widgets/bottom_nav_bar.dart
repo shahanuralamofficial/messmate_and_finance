@@ -12,6 +12,7 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
     final locale = settings.locale.languageCode;
+    final isBangla = locale == 'bn';
 
     return Container(
       decoration: BoxDecoration(
@@ -42,7 +43,7 @@ class BottomNavBar extends StatelessWidget {
               Navigator.pushReplacementNamed(context, '/accounts');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/reports');
+              Navigator.pushReplacementNamed(context, '/tools');
               break;
             case 3:
               Navigator.pushReplacementNamed(context, '/market');
@@ -64,9 +65,9 @@ class BottomNavBar extends StatelessWidget {
             label: AppTranslations.translate('accounts', locale),
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.bar_chart_outlined),
-            activeIcon: const Icon(Icons.bar_chart),
-            label: AppTranslations.translate('reports', locale),
+            icon: const Icon(Icons.category_outlined),
+            activeIcon: const Icon(Icons.category),
+            label: isBangla ? 'সরঞ্জাম' : 'Tools',
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.shopping_cart_outlined),

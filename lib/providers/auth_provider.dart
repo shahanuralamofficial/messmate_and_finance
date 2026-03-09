@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
+import '../services/cloudinary_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -170,5 +172,29 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('Error updating user settings: $e');
     }
+  }
+
+  Future<bool> updateProfilePicture(File imageFile) async {
+    if (_user == null) return false;
+    _setLoading(true);
+    try {
+      final String? photoUrl = await CloudinaryService.uploadImage(imageFile);
+      if (photoUrl != null) {
+        // Firebase Auth আপডেট
+        await _user!.updatePhotoURL(photoUrl);
+        // Firestore আপডেট
+        await _firestore.collection('users').doc(_user!.uid).update({
+          'photoURL': photoUrl,
+        });
+        // লোকাল মডেল আপডেট
+        await loadUserData(_user!.uid);
+        _setLoading(false);
+        return true;
+      }
+    } catch (e) {
+      _error = e.toString();
+    }
+    _setLoading(false);
+    return false;
   }
 }

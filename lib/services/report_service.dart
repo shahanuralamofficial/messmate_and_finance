@@ -1,12 +1,20 @@
+
 import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/transaction.dart';
+import '../models/budget.dart';
+import '../models/debt.dart';
 
 class ReportService {
-  Future<void> generateAndSharePdf(List<Transaction> transactions, String reportType) async {
+  Future<void> generateAndSharePdf({
+    required List<Transaction> transactions,
+    List<Budget>? budgets,
+    List<Debt>? debts,
+    required String reportType,
+  }) async {
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -14,37 +22,21 @@ class ReportService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         build: (context) => [
-          pw.Header(
-            level: 0,
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text('$reportType Financial Report', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
-                pw.Text(DateTime.now().toString().substring(0, 10)),
-              ],
-            ),
-          ),
+          _buildHeader(reportType),
           pw.SizedBox(height: 20),
-          pw.Table.fromTextArray(
-            headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
-            headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey800),
-            cellHeight: 30,
-            cellAlignments: {
-              0: pw.Alignment.centerLeft,
-              1: pw.Alignment.centerLeft,
-              2: pw.Alignment.centerLeft,
-              3: pw.Alignment.centerRight,
-              4: pw.Alignment.center,
-            },
-            headers: ['Date', 'Title', 'Category', 'Amount', 'Type'],
-            data: transactions.map((t) => [
-              t.date.toIso8601String().substring(0, 10),
-              t.title,
-              t.category,
-              t.amount.toStringAsFixed(2),
-              t.type.toString().split('.').last.toUpperCase(),
-            ]).toList(),
-          ),
+          _buildSummary(transactions),
+          pw.SizedBox(height: 20),
+          _buildTransactionTable(transactions),
+          if (budgets != null && budgets.isNotEmpty) ...[
+            pw.SizedBox(height: 30),
+            pw.Header(level: 1, text: 'Budget Status'),
+            _buildBudgetTable(budgets, transactions),
+          ],
+          if (debts != null && debts.isNotEmpty) ...[
+            pw.SizedBox(height: 30),
+            pw.Header(level: 1, text: 'Debts Summary'),
+            _buildDebtTable(debts),
+          ],
           pw.Padding(
             padding: const pw.EdgeInsets.only(top: 20),
             child: pw.Divider(),
@@ -65,5 +57,94 @@ class ReportService {
     await file.writeAsBytes(await pdf.save());
 
     await Share.shareXFiles([XFile(path)], text: '$reportType Financial Report');
+  }
+
+  pw.Widget _buildHeader(String title) {
+    return pw.Header(
+      level: 0,
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('$title Financial Report', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+          pw.Text(DateTime.now().toString().substring(0, 10)),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildSummary(List<Transaction> transactions) {
+    final income = transactions.where((t) => t.type == TransactionType.income).fold(0.0, (sum, t) => sum + t.amount);
+    final expense = transactions.where((t) => t.type == TransactionType.expense).fold(0.0, (sum, t) => sum + t.amount);
+
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(10),
+      decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+        children: [
+          _summaryItem('Total Income', income.toStringAsFixed(2), PdfColors.green),
+          _summaryItem('Total Expense', expense.toStringAsFixed(2), PdfColors.red),
+          _summaryItem('Net Balance', (income - expense).toStringAsFixed(2), PdfColors.blue),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _summaryItem(String label, String value, PdfColor color) {
+    return pw.Column(
+      children: [
+        pw.Text(label, style: const pw.TextStyle(fontSize: 12)),
+        pw.Text(value, style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold, color: color)),
+      ],
+    );
+  }
+
+  pw.Widget _buildTransactionTable(List<Transaction> transactions) {
+    return pw.Table.fromTextArray(
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey800),
+      cellHeight: 25,
+      headers: ['Date', 'Title', 'Category', 'Amount', 'Type'],
+      data: transactions.map((t) => [
+        t.date.toIso8601String().substring(0, 10),
+        t.title,
+        t.category,
+        t.amount.toStringAsFixed(2),
+        t.type.name.toUpperCase(),
+      ]).toList(),
+    );
+  }
+
+  pw.Widget _buildBudgetTable(List<Budget> budgets, List<Transaction> transactions) {
+    return pw.Table.fromTextArray(
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      headerDecoration: const pw.BoxDecoration(color: PdfColors.orange800),
+      headers: ['Category', 'Limit', 'Spent', 'Remaining'],
+      data: budgets.map((b) {
+        final spent = transactions
+            .where((t) => t.type == TransactionType.expense && t.category == b.category)
+            .fold(0.0, (sum, t) => sum + t.amount);
+        return [
+          b.category,
+          b.amount.toStringAsFixed(2),
+          spent.toStringAsFixed(2),
+          (b.amount - spent).toStringAsFixed(2),
+        ];
+      }).toList(),
+    );
+  }
+
+  pw.Widget _buildDebtTable(List<Debt> debts) {
+    return pw.Table.fromTextArray(
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      headerDecoration: const pw.BoxDecoration(color: PdfColors.red800),
+      headers: ['Person', 'Amount', 'Type', 'Status'],
+      data: debts.map((d) => [
+        d.personName,
+        d.amount.toStringAsFixed(2),
+        d.type == DebtType.oweMe ? 'Owe Me' : 'I Owe',
+        d.isSettled ? 'Settled' : 'Pending',
+      ]).toList(),
+    );
   }
 }

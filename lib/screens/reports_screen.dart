@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
 import '../providers/finance_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/theme_provider.dart';
@@ -45,15 +44,30 @@ class _ReportsScreenState extends State<ReportsScreen> {
               Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
               _buildDownloadTile(ctx, Icons.calendar_view_week, 'Weekly Report', () {
                 final weeklyTxs = financeProvider.transactions.where((t) => now.difference(t.date).inDays <= 7).toList();
-                _reportService.generateAndSharePdf(weeklyTxs, 'Weekly');
+                _reportService.generateAndSharePdf(
+                  transactions: weeklyTxs,
+                  budgets: financeProvider.budgets,
+                  debts: financeProvider.debts,
+                  reportType: 'Weekly',
+                );
               }),
               _buildDownloadTile(ctx, Icons.calendar_view_month, 'Monthly Report', () {
                 final monthlyTxs = financeProvider.transactions.where((t) => t.date.year == now.year && t.date.month == now.month).toList();
-                _reportService.generateAndSharePdf(monthlyTxs, 'Monthly');
+                _reportService.generateAndSharePdf(
+                  transactions: monthlyTxs,
+                  budgets: financeProvider.budgets,
+                  debts: financeProvider.debts,
+                  reportType: 'Monthly',
+                );
               }),
               _buildDownloadTile(ctx, Icons.calendar_today, 'Yearly Report', () {
                 final yearlyTxs = financeProvider.transactions.where((t) => t.date.year == _selectedYear).toList();
-                _reportService.generateAndSharePdf(yearlyTxs, 'Yearly');
+                _reportService.generateAndSharePdf(
+                  transactions: yearlyTxs,
+                  budgets: financeProvider.budgets,
+                  debts: financeProvider.debts,
+                  reportType: 'Yearly',
+                );
               }),
             ],
           ),
@@ -111,9 +125,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
           children: [
             Row(
               children: [
-                _buildProfessionalSummaryCard(isDark, Icons.trending_up, Colors.greenAccent, isBangla ? 'আয়' : 'Income', '${settings.currencySymbol}${yearlyIncome.toStringAsFixed(0)}'),
+                _buildProfessionalSummaryCard(isDark, Icons.trending_up, Colors.greenAccent, AppTranslations.translate('income', locale), '${settings.currencySymbol}${yearlyIncome.toStringAsFixed(0)}'),
                 const SizedBox(width: 12),
-                _buildProfessionalSummaryCard(isDark, Icons.trending_down, Colors.redAccent, isBangla ? 'ব্যয়' : 'Expense', '${settings.currencySymbol}${yearlyExpense.toStringAsFixed(0)}'),
+                _buildProfessionalSummaryCard(isDark, Icons.trending_down, Colors.redAccent, AppTranslations.translate('expense', locale), '${settings.currencySymbol}${yearlyExpense.toStringAsFixed(0)}'),
               ],
             ),
             const SizedBox(height: 24),
@@ -149,7 +163,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                   color: Colors.primaries[i % Colors.primaries.length],
                                   value: value,
                                   title: '${(value / yearlyExpense * 100).toStringAsFixed(0)}%',
-                                  radius: isTouched ? 65 : 55,
+                                  radius: isTouched ? 75 : 65,
                                   titleStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 12),
                                 );
                               }),
@@ -253,12 +267,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1E293B) : Colors.white,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: color, size: 20)),
+            Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle), child: Icon(icon, color: color, size: 20)),
             const SizedBox(height: 12),
             Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
             const SizedBox(height: 4),
@@ -276,7 +290,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

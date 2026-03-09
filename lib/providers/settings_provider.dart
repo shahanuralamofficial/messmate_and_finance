@@ -6,10 +6,10 @@ import 'auth_provider.dart';
 class SettingsProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
 
-  // Changed default locale to English
-  Locale _locale = const Locale('en', 'US');
-  String _currency = 'USD';
-  String _currencySymbol = '\$';
+  // Changed default locale to Bengali
+  Locale _locale = const Locale('bn', 'BD');
+  String _currency = 'BDT';
+  String _currencySymbol = '৳';
   bool _pinEnabled = false;
   String? _pinCode;
   bool _biometricEnabled = false;
@@ -28,11 +28,11 @@ class SettingsProvider extends ChangeNotifier {
   bool get notificationsEnabled => _notificationsEnabled;
 
   Future<void> _loadSettings() async {
-    // Changed default language to 'en'
-    final language = _prefs.getString('language') ?? 'en';
+    // Changed default language to 'bn'
+    final language = _prefs.getString('language') ?? 'bn';
     _locale = Locale(language, language == 'bn' ? 'BD' : 'US');
-    _currency = _prefs.getString('currency') ?? 'USD';
-    _currencySymbol = _prefs.getString('currencySymbol') ?? '\$';
+    _currency = _prefs.getString('currency') ?? 'BDT';
+    _currencySymbol = _prefs.getString('currencySymbol') ?? '৳';
     _pinEnabled = _prefs.getBool('pinEnabled') ?? false;
     _pinCode = _prefs.getString('pinCode');
     _biometricEnabled = _prefs.getBool('biometricEnabled') ?? false;
