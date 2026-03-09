@@ -31,8 +31,8 @@ class SettingsProvider extends ChangeNotifier {
     // Changed default language to 'bn'
     final language = _prefs.getString('language') ?? 'bn';
     _locale = Locale(language, language == 'bn' ? 'BD' : 'US');
-    _currency = _prefs.getString('currency') ?? 'BDT';
-    _currencySymbol = _prefs.getString('currencySymbol') ?? '৳';
+    _currency = 'BDT'; // Always BDT as per request
+    _currencySymbol = language == 'bn' ? '৳' : 'BDT';
     _pinEnabled = _prefs.getBool('pinEnabled') ?? false;
     _pinCode = _prefs.getString('pinCode');
     _biometricEnabled = _prefs.getBool('biometricEnabled') ?? false;
@@ -43,12 +43,17 @@ class SettingsProvider extends ChangeNotifier {
   Future<void> setLanguage(String languageCode, [BuildContext? context]) async {
     await _prefs.setString('language', languageCode);
     _locale = Locale(languageCode, languageCode == 'bn' ? 'BD' : 'US');
+    
+    // Update symbol automatically based on language
+    _currencySymbol = languageCode == 'bn' ? '৳' : 'BDT';
+    await _prefs.setString('currencySymbol', _currencySymbol);
 
     if (context != null) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       if (authProvider.isAuthenticated) {
         await authProvider.updateUserSettings({
           'language': languageCode,
+          'currencySymbol': _currencySymbol,
         });
       }
     }
