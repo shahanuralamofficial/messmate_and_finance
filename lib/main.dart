@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'services/notification_service.dart';
 import 'providers/auth_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/finance_provider.dart';
@@ -35,6 +36,8 @@ void main() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
     }
+    // Initialize Notifications
+    await NotificationService.initialize();
   } catch (e) {
     debugPrint('Firebase initialization error: $e');
   }
