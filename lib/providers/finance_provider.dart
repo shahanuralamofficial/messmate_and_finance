@@ -517,8 +517,27 @@ class FinanceProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> toggleMemberPaidStatus(String userId, String memberId, bool isPaid) async {
-    await _firestore.collection('users').doc(userId).collection('mess_members').doc(memberId).update({'isPaid': isPaid});
+  Future<void> toggleMemberPaidStatus(String userId, String memberId, bool isPaid, {String? method}) async {
+    final updates = {
+      'isPaid': isPaid,
+      'paymentMethod': method,
+      'paymentStatus': isPaid ? 'pending' : 'unpaid',
+    };
+    await _firestore.collection('users').doc(userId).collection('mess_members').doc(memberId).update(updates);
+    
+    final member = _messMembers.firstWhere((m) => m.id == memberId);
+    await _addMessLog(userId, memberId, member.name, isPaid ? 'Payment Sent' : 'Payment Reset', 
+      isPaid ? 'Sent payment via ${method ?? "Cash"}. Waiting for approval.' : 'Payment status reset.');
+  }
+
+  Future<void> confirmPayment(String userId, String memberId) async {
+    await _firestore.collection('users').doc(userId).collection('mess_members').doc(memberId).update({
+      'paymentStatus': 'confirmed',
+      'isPaid': true,
+    });
+    
+    final member = _messMembers.firstWhere((m) => m.id == memberId);
+    await _addMessLog(userId, userId, 'Manager', 'Payment Confirmed', 'Confirmed payment for ${member.name}');
   }
 
   Future<void> settleMonth(String userId) async {

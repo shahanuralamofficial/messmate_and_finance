@@ -403,20 +403,26 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
         children: [
           Row(
             children: [
-              CircleAvatar(backgroundColor: Colors.blueAccent.withOpacity(0.1), child: Text(member.name[0], style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold))),
+              GestureDetector(
+                onTap: member.appUserId != null ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(userId: member.appUserId))) : null,
+                child: CircleAvatar(backgroundColor: Colors.blueAccent.withOpacity(0.1), child: Text(member.name[0], style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold))),
+              ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(member.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                        if (member.isManager) Container(margin: const EdgeInsets.only(left: 8), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.orangeAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(4)), child: const Text('MGR', style: TextStyle(color: Colors.orangeAccent, fontSize: 8, fontWeight: FontWeight.bold))),
-                      ],
-                    ),
-                    Text('${isBN ? 'মিল' : 'Meals'}: ${member.totalMeals}', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                  ],
+                child: GestureDetector(
+                  onTap: member.appUserId != null ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(userId: member.appUserId))) : null,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(member.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          if (member.isManager) Container(margin: const EdgeInsets.only(left: 8), padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.orangeAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(4)), child: const Text('MGR', style: TextStyle(color: Colors.orangeAccent, fontSize: 8, fontWeight: FontWeight.bold))),
+                        ],
+                      ),
+                      Text('${isBN ? 'মিল' : 'Meals'}: ${member.totalMeals}', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                    ],
+                  ),
                 ),
               ),
               Column(
@@ -439,11 +445,45 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
               _buildActionBtn(Icons.receipt_long_outlined, isBN ? 'বিল' : 'Bills', isManager ? () => _showEditBillsDialog(member, fp, isBN) : null),
             ],
           ),
+          const SizedBox(height: 12),
+          if (member.isPaid)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: member.paymentStatus == 'confirmed' ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    member.paymentStatus == 'confirmed' ? Icons.check_circle_outline : Icons.pending_actions,
+                    size: 14,
+                    color: member.paymentStatus == 'confirmed' ? Colors.green : Colors.orange,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    member.paymentStatus == 'confirmed' 
+                      ? (isBN ? 'পেইড (${member.paymentMethod})' : 'Paid (${member.paymentMethod})')
+                      : (isBN ? 'পেন্ডিং (${member.paymentMethod})' : 'Pending (${member.paymentMethod})'),
+                    style: TextStyle(
+                      fontSize: 12, 
+                      fontWeight: FontWeight.bold,
+                      color: member.paymentStatus == 'confirmed' ? Colors.green : Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildActionBtn(Icons.account_balance_wallet_outlined, isBN ? 'জমা' : 'Deposit', isManager ? () => _showDepositDialog(member, fp, isBN) : null),
+              if (!member.isPaid && member.appUserId == auth.user?.uid)
+                _buildActionBtn(Icons.payments_outlined, isBN ? 'পেমেন্ট করুন' : 'Pay Bill', () => _showPaymentDialog(member, fp, isBN)),
+              if (member.isPaid && isManager)
+                _buildActionBtn(Icons.verified_user_outlined, isBN ? 'কনফার্ম' : 'Confirm', () => fp.confirmPayment(member.userId, member.id)),
             ],
           ),
           if (member.isManager && isManager) ...[
@@ -461,6 +501,43 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             ),
           ]
         ],
+      ),
+    );
+  }
+
+  void _showPaymentDialog(MessMember member, FinanceProvider fp, bool isBN) {
+    String selectedMethod = 'Cash';
+    final methods = ['Cash', 'bKash', 'Nagad', 'Rocket'];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(isBN ? 'পেমেন্ট মাধ্যম বেছে নিন' : 'Select Payment Method'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: methods.map((m) => RadioListTile(
+              title: Text(m),
+              value: m,
+              groupValue: selectedMethod,
+              onChanged: (v) => setDialogState(() => selectedMethod = v.toString()),
+            )).toList(),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isBN ? 'বাতিল' : 'Cancel')),
+            ElevatedButton(
+              onPressed: () {
+                fp.toggleMemberPaidStatus(member.userId, member.id, true, method: selectedMethod);
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(isBN ? 'পেমেন্ট রিকোয়েস্ট পাঠানো হয়েছে' : 'Payment request sent!'),
+                  backgroundColor: Colors.blue,
+                ));
+              },
+              child: Text(isBN ? 'নিশ্চিত করুন' : 'Confirm'),
+            ),
+          ],
+        ),
       ),
     );
   }

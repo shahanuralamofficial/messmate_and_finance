@@ -171,6 +171,43 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
+            // Mess Quick Summary
+            if (financeProvider.messMembers.any((m) => m.appUserId == authProvider.user?.uid))
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: Colors.blueAccent.withOpacity(0.1)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(isBangla ? 'মেস আপডেট (আজ)' : 'Mess Update (Today)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            const Icon(Icons.restaurant_menu_rounded, color: Colors.orangeAccent, size: 20),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildQuickMessItem(isBangla ? 'বাজার খরচ' : 'Market', '${settings.currencySymbol}${financeProvider.messMarketExpenses.where((e) => e.date.day == DateTime.now().day && e.status == ExpenseStatus.approved).fold(0.0, (sum, e) => sum + e.amount).toStringAsFixed(0)}', isDark),
+                            _buildQuickMessItem(isBangla ? 'মোট মিল' : 'Total Meals', financeProvider.messMeals.where((m) => m.date.day == DateTime.now().day).fold(0.0, (sum, m) => sum + m.count).toStringAsFixed(1), isDark),
+                            _buildQuickMessItem(isBangla ? 'আপনার মিল' : 'Your Meal', financeProvider.messMeals.where((m) => m.date.day == DateTime.now().day && m.appUserId == authProvider.user?.uid).fold(0.0, (sum, m) => sum + m.count).toStringAsFixed(1), isDark),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
             // Accounts Horizontal List
             SliverToBoxAdapter(
               child: Column(
@@ -278,6 +315,16 @@ class HomeScreen extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       bottomNavigationBar: const BottomNavBar(currentIndex: 0),
+    );
+  }
+
+  Widget _buildQuickMessItem(String label, String value, bool isDark) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : Colors.black54)),
+        const SizedBox(height: 4),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+      ],
     );
   }
 

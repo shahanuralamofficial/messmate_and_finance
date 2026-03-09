@@ -174,6 +174,36 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProfile(Map<String, dynamic> data) async {
+    if (_user == null) return false;
+    _setLoading(true);
+    try {
+      await _firestore.collection('users').doc(_user!.uid).update(data);
+      if (data.containsKey('displayName')) {
+        await _user!.updateDisplayName(data['displayName']);
+      }
+      await loadUserData(_user!.uid);
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  Future<UserModel?> getUserById(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data()!);
+      }
+    } catch (e) {
+      debugPrint('Error fetching user: $e');
+    }
+    return null;
+  }
+
   Future<bool> updateProfilePicture(File imageFile) async {
     if (_user == null) return false;
     _setLoading(true);
