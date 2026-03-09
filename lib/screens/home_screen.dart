@@ -29,113 +29,140 @@ class HomeScreen extends StatelessWidget {
                                authProvider.user?.displayName ?? 
                                (isBangla ? 'ব্যবহারকারী' : 'User');
 
+    final primaryColor = isDark ? const Color(0xFF6366F1) : const Color(0xFF4F46E5);
+
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       body: RefreshIndicator(
         onRefresh: () => financeProvider.loadUserData(authProvider.user!.uid),
         child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
           slivers: [
             // Professional App Bar
             SliverAppBar(
-              floating: true,
-              backgroundColor: Colors.transparent,
+              expandedHeight: 120.0,
+              floating: false,
+              pinned: true,
+              backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
               elevation: 0,
-              leading: Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: Icon(
-                  Icons.account_balance_wallet_rounded,
-                  color: isDark ? const Color(0xFF38BDF8) : Colors.black87,
-                  size: 30,
-                ),
-              ),
-              leadingWidth: 54,
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isBangla ? 'শুভ দিন 👋' : 'Good Day 👋',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 14),
-                  ),
-                  Text(
-                    displayName,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/profile'),
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 16),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.blueAccent.withOpacity(0.5), width: 2),
-                    ),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: Colors.grey[200],
-                      backgroundImage: authProvider.userModel?.photoURL != null 
-                        ? NetworkImage(authProvider.userModel!.photoURL!) 
-                        : null,
-                      child: authProvider.userModel?.photoURL == null 
-                        ? const Icon(Icons.person, size: 20, color: Colors.blueAccent) 
-                        : null,
+              flexibleSpace: FlexibleSpaceBar(
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        primaryColor.withOpacity(0.2),
+                        isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                      ],
                     ),
                   ),
                 ),
-              ],
+                titlePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isBangla ? 'শুভ দিন 👋' : 'Good Day 👋',
+                          style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 10, fontWeight: FontWeight.w500),
+                        ),
+                        Text(
+                          displayName,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pushNamed(context, '/profile'),
+                      child: Hero(
+                        tag: 'profile_pic',
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: primaryColor.withOpacity(0.5), width: 1.5),
+                          ),
+                          child: CircleAvatar(
+                            radius: 18,
+                            backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.grey[200],
+                            backgroundImage: authProvider.userModel?.photoURL != null 
+                              ? NetworkImage(authProvider.userModel!.photoURL!) 
+                              : null,
+                            child: authProvider.userModel?.photoURL == null 
+                              ? Icon(Icons.person, size: 20, color: primaryColor) 
+                              : null,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
 
             // Premium Dashboard Card
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(28),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: isDark 
                         ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                        : [const Color(0xFF0F172A), const Color(0xFF334155)],
+                        : [primaryColor, primaryColor.withOpacity(0.8)],
                     ),
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
-                        color: (isDark ? Colors.black : Colors.blueAccent).withOpacity(0.2),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
+                        color: primaryColor.withOpacity(isDark ? 0.1 : 0.3),
+                        blurRadius: 24,
+                        offset: const Offset(0, 12),
                       )
                     ],
                   ),
                   child: Column(
                     children: [
-                      Text(
-                        AppTranslations.translate('total_balance', locale),
-                        style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14, letterSpacing: 1),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          AppTranslations.translate('total_balance', locale).toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2),
+                        ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Text(
                         '${settings.currencySymbol}${financeProvider.totalBalance.toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 36,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 40,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -1,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildModernStat(Icons.arrow_downward_rounded, Colors.greenAccent, isBangla ? 'আয়' : 'Income', '${settings.currencySymbol}${financeProvider.totalIncome}'),
-                          Container(width: 1, height: 40, color: Colors.white24),
-                          _buildModernStat(Icons.arrow_upward_rounded, Colors.redAccent, isBangla ? 'ব্যয়' : 'Expense', '${settings.currencySymbol}${financeProvider.totalExpense}'),
+                          _buildModernStat(Icons.arrow_downward_rounded, const Color(0xFF34D399), isBangla ? 'আয়' : 'Income', '${settings.currencySymbol}${financeProvider.totalIncome}'),
+                          Container(width: 1, height: 35, color: Colors.white.withOpacity(0.2)),
+                          _buildModernStat(Icons.arrow_upward_rounded, const Color(0xFFFB7185), isBangla ? 'ব্যয়' : 'Expense', '${settings.currencySymbol}${financeProvider.totalExpense}'),
                         ],
                       ),
                     ],
@@ -225,14 +252,28 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showQuickAdd(context),
-        backgroundColor: Colors.blueAccent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text(
-          isBangla ? 'নতুন যোগ করুন' : 'Add New',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withOpacity(0.4),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showQuickAdd(context),
+          backgroundColor: const Color(0xFF6366F1),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          icon: const Icon(Icons.add_rounded, size: 28),
+          label: Text(
+            isBangla ? 'নতুন যোগ করুন' : 'Add New',
+            style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
@@ -258,14 +299,18 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildAccountCard(dynamic acc, String currency, bool isDark) {
     return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 12, bottom: 10),
-      padding: const EdgeInsets.all(16),
+      width: 150,
+      margin: const EdgeInsets.only(right: 16, bottom: 8, top: 4),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+          BoxShadow(
+            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
         ],
       ),
       child: Column(
@@ -273,16 +318,26 @@ class HomeScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.blueAccent, size: 20),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF6366F1), size: 22),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(acc.name, style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-              const SizedBox(height: 2),
-              Text('$currency${acc.balance}', style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold, fontSize: 15)),
+              Text(
+                acc.name, 
+                style: TextStyle(color: isDark ? Colors.white70 : const Color(0xFF1E293B), fontSize: 14, fontWeight: FontWeight.bold), 
+                overflow: TextOverflow.ellipsis
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$currency${acc.balance}', 
+                style: const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.w900, fontSize: 16)
+              ),
             ],
           ),
         ],
@@ -292,37 +347,66 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildTransactionTile(dynamic t, String currency, bool isDark) {
     final isIncome = t.type == TransactionType.income;
+    final color = isIncome ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
-      child: ListTile(
-        contentPadding: EdgeInsets.zero,
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: (isIncome ? Colors.greenAccent : Colors.redAccent).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(15),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(
+              isIncome ? Icons.keyboard_double_arrow_down_rounded : Icons.keyboard_double_arrow_up_rounded,
+              color: color,
+              size: 24,
+            ),
           ),
-          child: Icon(
-            isIncome ? Icons.keyboard_double_arrow_down_rounded : Icons.keyboard_double_arrow_up_rounded,
-            color: isIncome ? Colors.green : Colors.redAccent,
-            size: 20,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppTranslations.translate(t.category, 'en'), 
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1E293B), 
+                    fontWeight: FontWeight.bold, 
+                    fontSize: 15
+                  )
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat('dd MMM, yyyy').format(t.date), 
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12)
+                ),
+              ],
+            ),
           ),
-        ),
-        title: Text(AppTranslations.translate(t.category, 'en'), style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontWeight: FontWeight.bold, fontSize: 15)),
-        subtitle: Text(DateFormat('dd MMM, yyyy').format(t.date), style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-        trailing: Text(
-          '${isIncome ? '+' : '-'}$currency${t.amount}',
-          style: TextStyle(
-            color: isIncome ? Colors.greenAccent : Colors.redAccent,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
+          Text(
+            '${isIncome ? '+' : '-'}$currency${t.amount}',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w900,
+              fontSize: 17,
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
