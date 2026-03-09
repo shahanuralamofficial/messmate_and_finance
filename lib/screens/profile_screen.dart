@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -68,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (pickedFile != null) {
       setState(() => _isLoading = true);
       try {
-        await authProvider.updateProfilePicture(pickedFile.path);
+        await authProvider.updateProfilePicture(File(pickedFile.path));
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Profile picture updated!'), backgroundColor: Colors.green)
@@ -195,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           if (_isLoading)
                             Positioned.fill(
                               child: Container(
-                                decoration: BoxDecoration(color: Colors.black24, shape: BoxShape.circle),
+                                decoration: BoxDecoration(color: Colors.black.withOpacity(0.24), shape: BoxShape.circle),
                                 child: const Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)),
                               ),
                             ),
