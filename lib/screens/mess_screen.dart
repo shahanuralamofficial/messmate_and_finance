@@ -206,7 +206,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
               ),
               IconButton(
                 onPressed: () => MessReportHelper.generateAndPrintReport(
-                  messName: 'Mess Report',
+                  messInfo: fp.messInfo ?? MessInfo(id: '', name: 'My Mess', address: 'No Address', ownerPhone: ''),
                   members: fp.messMembers,
                   expenses: fp.messMarketExpenses,
                   totalMeals: fp.totalMessMeals,
@@ -216,6 +216,11 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
                 ),
                 icon: const Icon(Icons.picture_as_pdf_outlined, color: Colors.redAccent),
               ),
+              if (isManager)
+                IconButton(
+                  onPressed: () => _showMessSettingsDialog(fp, isBN),
+                  icon: const Icon(Icons.settings_suggest_outlined, color: Colors.indigo),
+                ),
             ],
           ),
           const SizedBox(height: 10),

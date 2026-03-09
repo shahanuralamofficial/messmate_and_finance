@@ -149,6 +149,13 @@ class FinanceProvider extends ChangeNotifier {
         notifyListeners();
       });
 
+      _firestore.collection('users').doc(userId).collection('mess_info').doc('details').snapshots().listen((doc) {
+        if (doc.exists) {
+          _messInfo = MessInfo.fromMap(doc.data()!);
+          notifyListeners();
+        }
+      });
+
       _messMealsSub = _firestore.collection('users').doc(userId).collection('mess_meals')
           .orderBy('date', descending: true).snapshots().listen((snap) {
         _messMeals = snap.docs.map((doc) => MessMeal.fromMap(doc.data())).toList();
