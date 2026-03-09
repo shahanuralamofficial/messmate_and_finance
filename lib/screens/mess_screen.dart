@@ -204,6 +204,18 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
                 icon: const Icon(Icons.person_add_alt_1),
                 label: Text(isBN ? 'সদস্য যোগ' : 'Add Member'),
               ),
+              IconButton(
+                onPressed: () => MessReportHelper.generateAndPrintReport(
+                  messName: 'Mess Report',
+                  members: fp.messMembers,
+                  expenses: fp.messMarketExpenses,
+                  totalMeals: fp.totalMessMeals,
+                  totalCost: fp.totalMessMarketCost,
+                  mealRate: fp.mealRate,
+                  currency: settings.currencySymbol,
+                ),
+                icon: const Icon(Icons.picture_as_pdf_outlined, color: Colors.redAccent),
+              ),
             ],
           ),
           const SizedBox(height: 10),
