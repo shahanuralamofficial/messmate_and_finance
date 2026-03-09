@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "182152393979",
+    "project_id": "messmate-and-finance",
+    "storage_bucket": "messmate-and-finance.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:182152393979:android:b2a36a151bca07b520ec5e",
+        "android_client_info": {
+          "package_name": "com.messmate.finance"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "182152393979-v3oni0ck85qmb21ia697ueqbnogibpv5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeS511rzKQnoorIoeXGFbeXqLmHj3c9Cc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "182152393979-v3oni0ck85qmb21ia697ueqbnogibpv5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
