@@ -1,3 +1,4 @@
+enum ExpenseStatus { pending, approved, rejected }
 
 class MessMarketExpense {
   final String id;
@@ -7,6 +8,7 @@ class MessMarketExpense {
   final double amount;
   final String description;
   final DateTime date;
+  final ExpenseStatus status;
 
   MessMarketExpense({
     required this.id,
@@ -16,6 +18,7 @@ class MessMarketExpense {
     required this.amount,
     required this.description,
     required this.date,
+    this.status = ExpenseStatus.approved, // Default to approved for manager's own entries
   });
 
   Map<String, dynamic> toMap() {
@@ -27,6 +30,7 @@ class MessMarketExpense {
       'amount': amount,
       'description': description,
       'date': date.toIso8601String(),
+      'status': status.name,
     };
   }
 
@@ -39,6 +43,25 @@ class MessMarketExpense {
       amount: (map['amount'] ?? 0.0).toDouble(),
       description: map['description'] ?? '',
       date: DateTime.parse(map['date']),
+      status: ExpenseStatus.values.firstWhere(
+        (e) => e.name == (map['status'] ?? 'approved'),
+        orElse: () => ExpenseStatus.approved,
+      ),
+    );
+  }
+
+  MessMarketExpense copyWith({
+    ExpenseStatus? status,
+  }) {
+    return MessMarketExpense(
+      id: id,
+      messId: messId,
+      memberId: memberId,
+      memberName: memberName,
+      amount: amount,
+      description: description,
+      date: date,
+      status: status ?? this.status,
     );
   }
 }

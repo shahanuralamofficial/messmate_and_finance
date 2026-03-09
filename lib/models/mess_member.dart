@@ -1,9 +1,9 @@
-
 class MessMember {
   final String id;
-  final String userId; // The Mess Manager's ID
+  final String userId; // The Mess Manager's ID (who created the mess)
   final String? appUserId; // If the member is also an app user, their UID
   final String name;
+  final String? email; // For connecting with app users
   final double initialDeposit;
   final double totalMeals;
   final double totalMarketCost;
@@ -24,6 +24,7 @@ class MessMember {
     required this.userId,
     this.appUserId,
     required this.name,
+    this.email,
     this.initialDeposit = 0.0,
     this.totalMeals = 0.0,
     this.totalMarketCost = 0.0,
@@ -43,6 +44,7 @@ class MessMember {
       'userId': userId,
       'appUserId': appUserId,
       'name': name,
+      'email': email,
       'initialDeposit': initialDeposit,
       'totalMeals': totalMeals,
       'totalMarketCost': totalMarketCost,
@@ -59,10 +61,11 @@ class MessMember {
 
   factory MessMember.fromMap(Map<String, dynamic> map) {
     return MessMember(
-      id: map['id'],
-      userId: map['userId'],
+      id: map['id'] ?? '',
+      userId: map['userId'] ?? '',
       appUserId: map['appUserId'],
-      name: map['name'],
+      name: map['name'] ?? '',
+      email: map['email'],
       initialDeposit: (map['initialDeposit'] ?? 0.0).toDouble(),
       totalMeals: (map['totalMeals'] ?? 0.0).toDouble(),
       totalMarketCost: (map['totalMarketCost'] ?? 0.0).toDouble(),
@@ -79,6 +82,7 @@ class MessMember {
 
   MessMember copyWith({
     String? name,
+    String? email,
     double? initialDeposit,
     double? totalMeals,
     double? totalMarketCost,
@@ -91,12 +95,14 @@ class MessMember {
     bool? isManager,
     bool? isAppUser,
     String? appUserId,
+    String? userId,
   }) {
     return MessMember(
       id: id,
-      userId: userId,
+      userId: userId ?? this.userId,
       appUserId: appUserId ?? this.appUserId,
       name: name ?? this.name,
+      email: email ?? this.email,
       initialDeposit: initialDeposit ?? this.initialDeposit,
       totalMeals: totalMeals ?? this.totalMeals,
       totalMarketCost: totalMarketCost ?? this.totalMarketCost,

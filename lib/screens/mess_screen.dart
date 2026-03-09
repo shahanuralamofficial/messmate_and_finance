@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -26,7 +25,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -44,6 +43,10 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
     final isDark = themeProvider.isDarkMode;
     final locale = settings.locale.languageCode;
     final isBN = locale == 'bn';
+
+    final pendingExpenses = financeProvider.messMarketExpenses.where((e) => e.status == ExpenseStatus.pending).toList();
+    final pendingMeals = financeProvider.messMealPlans.where((p) => p.status == MealPlanStatus.pending).toList();
+    final totalPending = pendingExpenses.length + pendingMeals.length;
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
@@ -69,8 +72,23 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.blueAccent,
+          isScrollable: true,
           tabs: [
             Tab(text: isBN ? 'সদস্য' : 'Members'),
+            Tab(
+              child: Row(
+                children: [
+                  Text(isBN ? 'অনুরোধ' : 'Requests'),
+                  if (totalPending > 0)
+                    Container(
+                      margin: const EdgeInsets.only(left: 6),
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                      child: Text(totalPending.toString(), style: const TextStyle(color: Colors.white, fontSize: 10)),
+                    ),
+                ],
+              ),
+            ),
             Tab(text: isBN ? 'খরচ' : 'Expenses'),
             Tab(text: isBN ? 'ইতিহাস' : 'History'),
           ],
@@ -80,9 +98,90 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
         controller: _tabController,
         children: [
           _buildMembersTab(financeProvider, authProvider, isBN, isDark, settings.currencySymbol),
+          _buildRequestsTab(financeProvider, authProvider, isBN, isDark, settings.currencySymbol),
           _buildExpensesTab(financeProvider, isBN, isDark, settings.currencySymbol),
           _buildLogsTab(financeProvider, isBN, isDark),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRequestsTab(FinanceProvider fp, AuthProvider auth, bool isBN, bool isDark, String symbol) {
+    final currentMember = fp.messMembers.firstWhere((m) => m.appUserId == auth.user?.uid, orElse: () => fp.messMembers.first);
+    final isManager = currentMember.isManager;
+
+    final pendingExpenses = fp.messMarketExpenses.where((e) => e.status == ExpenseStatus.pending).toList();
+    final pendingMeals = fp.messMealPlans.where((p) => p.status == MealPlanStatus.pending).toList();
+
+    if (pendingExpenses.isEmpty && pendingMeals.isEmpty) {
+      return _buildEmptyState(isBN ? 'কোন পেন্ডিং অনুরোধ নেই' : 'No pending requests', isDark);
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (pendingExpenses.isNotEmpty) ...[
+          Text(isBN ? 'বাজার খরচের অনুরোধ' : 'Market Expense Requests', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 10),
+          ...pendingExpenses.map((e) => _buildExpenseRequestTile(e, fp, isManager, isBN, isDark, symbol)),
+          const SizedBox(height: 20),
+        ],
+        if (pendingMeals.isNotEmpty) ...[
+          Text(isBN ? 'মিল অন/অফ অনুরোধ' : 'Meal Toggle Requests', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 10),
+          ...pendingMeals.map((p) => _buildMealRequestTile(p, fp, isManager, isBN, isDark)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildExpenseRequestTile(MessMarketExpense e, FinanceProvider fp, bool isManager, bool isBN, bool isDark, String symbol) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: ListTile(
+        title: Text(e.description, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text('${e.memberName} • $symbol${e.amount}'),
+        trailing: isManager 
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(icon: const Icon(Icons.check_circle, color: Colors.green), onPressed: () => fp.approveExpense(e.messId, e)),
+                IconButton(icon: const Icon(Icons.cancel, color: Colors.red), onPressed: () => fp.rejectExpense(e.messId, e.id)),
+              ],
+            )
+          : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              child: Text(isBN ? 'পেন্ডিং' : 'Pending', style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+            ),
+      ),
+    );
+  }
+
+  Widget _buildMealRequestTile(MessMealPlan p, FinanceProvider fp, bool isManager, bool isBN, bool isDark) {
+    final dateStr = DateFormat('dd MMM').format(p.date);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: ListTile(
+        title: Text('${p.memberName} - ${p.isEnabled ? (isBN ? "মিল অন" : "Meal ON") : (isBN ? "মিল অফ" : "Meal OFF")}'),
+        subtitle: Text('${isBN ? "তারিখ" : "Date"}: $dateStr'),
+        trailing: isManager 
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(icon: const Icon(Icons.check_circle, color: Colors.green), onPressed: () => fp.approveMealPlan(p.messId, p)),
+                IconButton(icon: const Icon(Icons.cancel, color: Colors.red), onPressed: () => fp.rejectMealPlan(p.messId, p.id)),
+              ],
+            )
+          : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              child: Text(isBN ? 'পেন্ডিং' : 'Pending', style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+            ),
       ),
     );
   }
@@ -93,6 +192,8 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
       child: Column(
         children: [
           _buildOverviewCard(fp, isBN, isDark, symbol),
+          const SizedBox(height: 10),
+          _buildDailySummaryCard(fp, isBN, isDark, symbol),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -115,7 +216,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
               itemCount: fp.messMembers.length,
               itemBuilder: (context, index) {
                 final member = fp.messMembers[index];
-                return _buildMemberTile(member, fp, isBN, isDark, symbol);
+                return _buildMemberTile(member, fp, isBN, isDark, symbol, auth);
               },
             ),
         ],
@@ -124,14 +225,15 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildExpensesTab(FinanceProvider fp, bool isBN, bool isDark, String symbol) {
-    if (fp.messMarketExpenses.isEmpty) {
+    final approvedExpenses = fp.messMarketExpenses.where((e) => e.status == ExpenseStatus.approved).toList();
+    if (approvedExpenses.isEmpty) {
       return _buildEmptyState(isBN ? 'কোন খরচ নেই' : 'No expenses recorded', isDark);
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: fp.messMarketExpenses.length,
+      itemCount: approvedExpenses.length,
       itemBuilder: (context, index) {
-        final expense = fp.messMarketExpenses[index];
+        final expense = approvedExpenses[index];
         return Card(
           elevation: 0,
           color: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -212,7 +314,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             children: [
               Column(
                 children: [
-                  Text(isBN ? 'মিল রেট' : 'Meal Rate', style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                  Text(isBN ? 'গড় মিল রেট' : 'Avg. Meal Rate', style: const TextStyle(color: Colors.white70, fontSize: 14)),
                   Text('$symbol${fp.mealRate.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -220,6 +322,56 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDailySummaryCard(FinanceProvider fp, bool isBN, bool isDark, String symbol) {
+    final now = DateTime.now();
+    final dailyRate = fp.getDailyMealRate(now);
+    final dayExpenses = fp.messMarketExpenses
+        .where((e) => e.status == ExpenseStatus.approved && e.date.day == now.day && e.date.month == now.month)
+        .fold(0.0, (sum, e) => sum + e.amount);
+    final dayMeals = fp.messMeals
+        .where((m) => m.date.day == now.day && m.date.month == now.month)
+        .fold(0.0, (sum, m) => sum + m.count);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.blueAccent.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(isBN ? 'আজকের হিসাব' : "Today's Status", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text(DateFormat('dd MMM').format(now), style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildDailyStat(isBN ? 'আজকের খরচ' : 'Today Cost', '$symbol${dayExpenses.toStringAsFixed(0)}', isDark),
+              _buildDailyStat(isBN ? 'আজকের মিল' : 'Today Meals', dayMeals.toStringAsFixed(1), isDark),
+              _buildDailyStat(isBN ? 'আজকের রেট' : 'Today Rate', '$symbol${dailyRate.toStringAsFixed(2)}', isDark),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyStat(String label, String value, bool isDark) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 10)),
+        Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: isDark ? Colors.white : Colors.black87)),
+      ],
     );
   }
 
@@ -233,9 +385,11 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildMemberTile(MessMember member, FinanceProvider fp, bool isBN, bool isDark, String symbol) {
+  Widget _buildMemberTile(MessMember member, FinanceProvider fp, bool isBN, bool isDark, String symbol, AuthProvider auth) {
     final double cost = member.totalMeals * fp.mealRate;
     final double balance = member.initialDeposit - cost;
+    final currentMember = fp.messMembers.firstWhere((m) => m.appUserId == auth.user?.uid, orElse: () => fp.messMembers.first);
+    final isManager = currentMember.isManager;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -272,20 +426,27 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
                   Text(balance >= 0 ? (isBN ? 'পাবে' : 'Balance') : (isBN ? 'দেবে' : 'Due'), style: TextStyle(fontSize: 10, color: Colors.grey[500])),
                 ],
               ),
-              IconButton(icon: const Icon(Icons.more_vert), onPressed: () => _showMemberOptions(member, fp, isBN)),
+              IconButton(icon: const Icon(Icons.more_vert), onPressed: () => _showMemberOptions(member, fp, currentMember, isBN)),
             ],
           ),
           const Divider(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildActionBtn(Icons.calendar_month_outlined, isBN ? 'মিলের প্ল্যান' : 'Meal Plan', () => _showMealPlanDialog(member, fp, isBN)),
-              _buildActionBtn(Icons.shopping_cart_outlined, isBN ? 'বাজার' : 'Market', () => _showAddMarketDialog(member, fp, isBN)),
-              _buildActionBtn(Icons.receipt_long_outlined, isBN ? 'বিল' : 'Bills', () => _showEditBillsDialog(member, fp, isBN)),
-              _buildActionBtn(Icons.account_balance_wallet_outlined, isBN ? 'জমা' : 'Deposit', () => _showDepositDialog(member, fp, isBN)),
+              _buildActionBtn(Icons.calendar_month_outlined, isBN ? 'মিলের প্ল্যান' : 'Meal Plan', () => _showMealPlanDialog(member, fp, isManager, isBN)),
+              _buildActionBtn(Icons.shopping_cart_outlined, isBN ? 'বাজার' : 'Market', () => _showAddMarketDialog(member, fp, isManager, isBN)),
+              _buildActionBtn(Icons.analytics_outlined, isBN ? 'ডেইলি স্ট্যাটাস' : 'Daily Status', () => _showDailyStatusDialog(member, fp, isBN, symbol)),
+              _buildActionBtn(Icons.receipt_long_outlined, isBN ? 'বিল' : 'Bills', isManager ? () => _showEditBillsDialog(member, fp, isBN) : null),
             ],
           ),
-          if (member.isManager) ...[
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildActionBtn(Icons.account_balance_wallet_outlined, isBN ? 'জমা' : 'Deposit', isManager ? () => _showDepositDialog(member, fp, isBN) : null),
+            ],
+          ),
+          if (member.isManager && isManager) ...[
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: () => _confirmSettleMonth(fp, isBN),
@@ -299,6 +460,53 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
               ),
             ),
           ]
+        ],
+      ),
+    );
+  }
+
+  void _showDailyStatusDialog(MessMember member, FinanceProvider fp, bool isBN, String symbol) {
+    final now = DateTime.now();
+    final dailyRate = fp.getDailyMealRate(now);
+    final memberDailyCost = fp.getMemberDailyCost(member.id, now);
+    final memberDayMeals = fp.messMeals
+        .where((m) => m.memberId == member.id && m.date.day == now.day && m.date.month == now.month)
+        .fold(0.0, (sum, m) => sum + m.count);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('${member.name} - ${isBN ? 'আজকের রিপোর্ট' : "Today's Report"}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _reportRow(isBN ? 'আজকের মিল:' : 'Today Meals:', memberDayMeals.toStringAsFixed(1)),
+            _reportRow(isBN ? 'আজকের মিল রেট:' : 'Daily Meal Rate:', '$symbol${dailyRate.toStringAsFixed(2)}'),
+            const Divider(),
+            _reportRow(isBN ? 'আজকের মোট খরচ:' : 'Today Total Cost:', '$symbol${memberDailyCost.toStringAsFixed(2)}', isBold: true),
+            const SizedBox(height: 10),
+            Text(isBN ? '* আজ যে পরিমাণ বাজার হয়েছে এবং সবাই মিলে যে কয়টা মিল খেয়েছে, তার ওপর ভিত্তি করে এই হিসাব।' 
+                : '* This calculation is based on today\'s total market expense and total meals consumed by all members.',
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isBN ? 'বন্ধ করুন' : 'Close')),
+        ],
+      ),
+    );
+  }
+
+  Widget _reportRow(String label, String value, {bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: isBold ? Colors.blueAccent : null)),
         ],
       ),
     );
@@ -380,14 +588,15 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildActionBtn(IconData icon, String label, VoidCallback onTap) {
+  Widget _buildActionBtn(IconData icon, String label, VoidCallback? onTap) {
+    final color = onTap == null ? Colors.grey : Colors.blueAccent;
     return InkWell(
       onTap: onTap,
       child: Column(
         children: [
-          Icon(icon, size: 20, color: Colors.blueAccent),
+          Icon(icon, size: 20, color: color),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 10, color: Colors.blueAccent)),
+          Text(label, style: TextStyle(fontSize: 10, color: color)),
         ],
       ),
     );
@@ -395,6 +604,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
 
   void _showAddMemberDialog(BuildContext context, String uid, FinanceProvider fp, bool isBN) {
     final nameController = TextEditingController();
+    final emailController = TextEditingController();
     bool isManager = false;
     showDialog(
       context: context,
@@ -405,6 +615,8 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(controller: nameController, decoration: InputDecoration(hintText: isBN ? 'নাম লিখুন' : 'Enter Name')),
+              const SizedBox(height: 10),
+              TextField(controller: emailController, decoration: InputDecoration(hintText: isBN ? 'ইমেইল (ঐচ্ছিক)' : 'Email (Optional)')),
               const SizedBox(height: 10),
               CheckboxListTile(
                 title: Text(isBN ? 'ম্যানেজার?' : 'Is Manager?'),
@@ -422,6 +634,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
                     id: const Uuid().v4(),
                     userId: uid,
                     name: nameController.text,
+                    email: emailController.text.isEmpty ? null : emailController.text,
                     isManager: isManager,
                   ));
                   Navigator.pop(ctx);
@@ -435,14 +648,14 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
     );
   }
 
-  void _showMealPlanDialog(MessMember member, FinanceProvider fp, bool isBN) {
+  void _showMealPlanDialog(MessMember member, FinanceProvider fp, bool isManager, bool isBN) {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     showDialog(
       context: context,
       builder: (ctx) {
         final plan = fp.messMealPlans.firstWhere(
           (p) => p.memberId == member.id && p.date.day == tomorrow.day && p.date.month == tomorrow.month,
-          orElse: () => MessMealPlan(id: '', messId: member.userId, memberId: member.id, date: tomorrow, isEnabled: true),
+          orElse: () => MessMealPlan(id: '', messId: member.userId, memberId: member.id, memberName: member.name, date: tomorrow, isEnabled: true),
         );
         bool currentStatus = plan.isEnabled;
 
@@ -461,14 +674,26 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
                     setDialogState(() => currentStatus = v);
                   },
                 ),
+                if (!isManager) Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(isBN ? '* এটি অনুরোধ হিসেবে জমা হবে' : '* This will be sent as a request', style: const TextStyle(fontSize: 10, color: Colors.orange)),
+                ),
               ],
             ),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isBN ? 'বন্ধ করুন' : 'Close')),
               ElevatedButton(
-                onPressed: () {
-                  fp.toggleMealPlan(member.userId, member.id, tomorrow, currentStatus, member.name);
-                  Navigator.pop(ctx);
+                onPressed: () async {
+                  try {
+                    if (isManager) {
+                      await fp.toggleMealPlan(member.userId, member.id, tomorrow, currentStatus, member.name);
+                    } else {
+                      await fp.requestMealPlan(member.userId, member.id, member.name, tomorrow, currentStatus);
+                    }
+                    if (mounted) Navigator.pop(ctx);
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                  }
                 },
                 child: Text(isBN ? 'নিশ্চিত করুন' : 'Confirm'),
               ),
@@ -479,7 +704,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
     );
   }
 
-  void _showAddMarketDialog(MessMember member, FinanceProvider fp, bool isBN) {
+  void _showAddMarketDialog(MessMember member, FinanceProvider fp, bool isManager, bool isBN) {
     final amountController = TextEditingController();
     final descController = TextEditingController();
     showDialog(
@@ -492,6 +717,10 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             TextField(controller: amountController, keyboardType: TextInputType.number, decoration: InputDecoration(hintText: isBN ? 'টাকার পরিমাণ' : 'Amount')),
             const SizedBox(height: 10),
             TextField(controller: descController, decoration: InputDecoration(hintText: isBN ? 'কি বাজার করলেন?' : 'Description (e.g., Fish, Rice)')),
+            if (!isManager) Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(isBN ? '* এটি অনুমোদনের জন্য ম্যানেজারের কাছে যাবে' : '* This requires manager approval', style: const TextStyle(fontSize: 10, color: Colors.orange)),
+            ),
           ],
         ),
         actions: [
@@ -500,7 +729,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             onPressed: () {
               final amount = double.tryParse(amountController.text) ?? 0;
               if (amount > 0) {
-                fp.addMessMarketCost(member.userId, member.id, amount, descController.text.isEmpty ? (isBN ? 'বাজার' : 'Market') : descController.text, member.name);
+                fp.addMessMarketCost(member.userId, member.id, amount, descController.text.isEmpty ? (isBN ? 'বাজার' : 'Market') : descController.text, member.name, isManager: isManager);
                 Navigator.pop(ctx);
               }
             },
@@ -535,20 +764,30 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
     );
   }
 
-  void _showMemberOptions(MessMember member, FinanceProvider fp, bool isBN) {
+  void _showMemberOptions(MessMember member, FinanceProvider fp, MessMember currentMember, bool isBN) {
     showModalBottomSheet(
       context: context,
       builder: (ctx) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ListTile(
-            leading: const Icon(Icons.delete, color: Colors.red),
-            title: Text(isBN ? 'সদস্য ডিলিট করুন' : 'Delete Member', style: const TextStyle(color: Colors.red)),
-            onTap: () {
-              fp.deleteMessMember(member.userId, member.id);
-              Navigator.pop(ctx);
-            },
-          ),
+          if (currentMember.isManager && !member.isManager)
+            ListTile(
+              leading: const Icon(Icons.stars, color: Colors.orange),
+              title: Text(isBN ? 'ম্যানেজার করুন' : 'Make Manager'),
+              onTap: () {
+                fp.transferManagerRole(member.userId, currentMember.id, member.id);
+                Navigator.pop(ctx);
+              },
+            ),
+          if (currentMember.isManager)
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: Text(isBN ? 'সদস্য ডিলিট করুন' : 'Delete Member', style: const TextStyle(color: Colors.red)),
+              onTap: () {
+                fp.deleteMessMember(member.userId, member.id);
+                Navigator.pop(ctx);
+              },
+            ),
           const SizedBox(height: 20),
         ],
       ),

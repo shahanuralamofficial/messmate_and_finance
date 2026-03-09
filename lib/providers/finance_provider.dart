@@ -82,6 +82,37 @@ class FinanceProvider extends ChangeNotifier {
   double get totalMessMarketCost => _messMembers.fold(0, (sum, m) => sum + m.totalMarketCost);
   double get mealRate => totalMessMeals == 0 ? 0 : totalMessMarketCost / totalMessMeals;
 
+  // Daily Calculations
+  double getDailyMealRate(DateTime date) {
+    final dayExpenses = _messMarketExpenses
+        .where((e) => e.status == ExpenseStatus.approved && 
+                      e.date.day == date.day && 
+                      e.date.month == date.month && 
+                      e.date.year == date.year)
+        .fold(0.0, (sum, e) => sum + e.amount);
+
+    final dayMeals = _messMeals
+        .where((m) => m.date.day == date.day && 
+                      m.date.month == date.month && 
+                      m.date.year == date.year)
+        .fold(0.0, (sum, m) => sum + m.count);
+
+    return dayMeals == 0 ? 0 : dayExpenses / dayMeals;
+  }
+
+  double getMemberDailyCost(String memberId, DateTime date) {
+    final dayMealCount = _messMeals
+        .where((m) => m.memberId == memberId && 
+                      m.date.day == date.day && 
+                      m.date.month == date.month && 
+                      m.date.year == date.year)
+        .fold(0.0, (sum, m) => sum + m.count);
+    
+    // Using overall meal rate for consistency, or daily if requested. 
+    // Usually daily rate fluctuates too much, but per user request:
+    return dayMealCount * getDailyMealRate(date);
+  }
+
   Future<void> loadUserData(String userId) async {
     _setLoading(true);
     _cancelSubscriptions();
@@ -294,6 +325,18 @@ class FinanceProvider extends ChangeNotifier {
     await _firestore.collection('users').doc(member.userId).collection('mess_members').doc(member.id).update(member.toMap());
   }
 
+  Future<void> transferManagerRole(String userId, String oldManagerMemberId, String newManagerMemberId) async {
+    final batch = _firestore.batch();
+    final oldRef = _firestore.collection('users').doc(userId).collection('mess_members').doc(oldManagerMemberId);
+    final newRef = _firestore.collection('users').doc(userId).collection('mess_members').doc(newManagerMemberId);
+    
+    batch.update(oldRef, {'isManager': false});
+    batch.update(newRef, {'isManager': true});
+    
+    await batch.commit();
+    await _addMessLog(userId, userId, 'System', 'Manager Transferred', 'Role transferred to a new member');
+  }
+
   Future<void> deleteMessMember(String userId, String id) async {
     await _firestore.collection('users').doc(userId).collection('mess_members').doc(id).delete();
     // Also delete their meals
@@ -329,7 +372,7 @@ class FinanceProvider extends ChangeNotifier {
     await batch.commit();
   }
 
-  Future<void> addMessMarketCost(String userId, String memberId, double amount, String description, String actorName) async {
+  Future<void> addMessMarketCost(String userId, String memberId, double amount, String description, String actorName, {bool isManager = false}) async {
     final batch = _firestore.batch();
     
     final expenseId = const Uuid().v4();
@@ -345,13 +388,16 @@ class FinanceProvider extends ChangeNotifier {
       amount: amount,
       description: description,
       date: DateTime.now(),
+      status: isManager ? ExpenseStatus.approved : ExpenseStatus.pending,
     );
     
     batch.set(expenseRef, expense.toMap());
 
-    // Update member's total market cost
-    final memberRef = _firestore.collection('users').doc(userId).collection('mess_members').doc(memberId);
-    batch.update(memberRef, {'totalMarketCost': FieldValue.increment(amount)});
+    if (isManager) {
+      // Update member's total market cost immediately if manager adds it
+      final memberRef = _firestore.collection('users').doc(userId).collection('mess_members').doc(memberId);
+      batch.update(memberRef, {'totalMarketCost': FieldValue.increment(amount)});
+    }
 
     // Add Log
     final logId = const Uuid().v4();
@@ -362,7 +408,7 @@ class FinanceProvider extends ChangeNotifier {
       actorId: memberId,
       actorName: actorName,
       action: 'Market Expense',
-      details: 'Added $amount for $description',
+      details: '${isManager ? "Added" : "Requested"} $amount for $description',
       timestamp: DateTime.now(),
     );
     batch.set(logRef, log.toMap());
@@ -370,7 +416,40 @@ class FinanceProvider extends ChangeNotifier {
     await batch.commit();
   }
 
-  Future<void> toggleMealPlan(String userId, String memberId, DateTime date, bool isEnabled, String actorName) async {
+  Future<void> approveExpense(String userId, MessMarketExpense expense) async {
+    final batch = _firestore.batch();
+    
+    // Update expense status
+    final expenseRef = _firestore.collection('users').doc(userId).collection('mess_market_expenses').doc(expense.id);
+    batch.update(expenseRef, {'status': ExpenseStatus.approved.name});
+
+    // Update member's total market cost
+    final memberRef = _firestore.collection('users').doc(userId).collection('mess_members').doc(expense.memberId);
+    batch.update(memberRef, {'totalMarketCost': FieldValue.increment(expense.amount)});
+
+    // Add Log
+    await _addMessLog(userId, userId, 'Manager', 'Expense Approved', 'Approved ${expense.amount} for ${expense.memberName}');
+
+    await batch.commit();
+  }
+
+  Future<void> rejectExpense(String userId, String expenseId) async {
+    await _firestore.collection('users').doc(userId).collection('mess_market_expenses').doc(expenseId).update({
+      'status': ExpenseStatus.rejected.name
+    });
+    await _addMessLog(userId, userId, 'Manager', 'Expense Rejected', 'Market expense rejected');
+  }
+
+  Future<void> requestMealPlan(String userId, String memberId, String memberName, DateTime date, bool isEnabled) async {
+    // Rule: Must be at least 1 day in advance
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final requestDate = DateTime(date.year, date.month, date.day);
+    final minDate = DateTime(tomorrow.year, tomorrow.month, tomorrow.day);
+    
+    if (requestDate.isBefore(minDate)) {
+      throw Exception('You must request meal changes at least 1 day in advance.');
+    }
+
     final planId = '${memberId}_${date.year}_${date.month}_${date.day}';
     final planRef = _firestore.collection('users').doc(userId).collection('mess_meal_plans').doc(planId);
     
@@ -378,13 +457,45 @@ class FinanceProvider extends ChangeNotifier {
       id: planId,
       messId: userId,
       memberId: memberId,
+      memberName: memberName,
       date: date,
       isEnabled: isEnabled,
+      status: MealPlanStatus.pending,
     );
 
     await planRef.set(plan.toMap());
+    await _addMessLog(userId, memberId, memberName, 'Meal Request', 'Requested meal ${isEnabled ? "ON" : "OFF"} for ${date.day}/${date.month}');
+  }
+
+  Future<void> approveMealPlan(String userId, MessMealPlan plan) async {
+    await _firestore.collection('users').doc(userId).collection('mess_meal_plans').doc(plan.id).update({
+      'status': MealPlanStatus.approved.name
+    });
+    await _addMessLog(userId, userId, 'Manager', 'Meal Approved', 'Approved ${plan.isEnabled ? "ON" : "OFF"} for ${plan.memberName}');
+  }
+
+  Future<void> rejectMealPlan(String userId, String planId) async {
+    await _firestore.collection('users').doc(userId).collection('mess_meal_plans').doc(planId).update({
+      'status': MealPlanStatus.rejected.name
+    });
+  }
+
+  Future<void> toggleMealPlan(String userId, String memberId, DateTime date, bool isEnabled, String actorName) async {
+    // Manager's direct toggle (auto-approved)
+    final planId = '${memberId}_${date.year}_${date.month}_${date.day}';
+    final planRef = _firestore.collection('users').doc(userId).collection('mess_meal_plans').doc(planId);
     
-    // Log the action
+    final plan = MessMealPlan(
+      id: planId,
+      messId: userId,
+      memberId: memberId,
+      memberName: actorName,
+      date: date,
+      isEnabled: isEnabled,
+      status: MealPlanStatus.approved,
+    );
+
+    await planRef.set(plan.toMap());
     await _addMessLog(userId, memberId, actorName, 'Meal Toggle', '${isEnabled ? "Enabled" : "Disabled"} meal for ${date.day}/${date.month}');
   }
 
