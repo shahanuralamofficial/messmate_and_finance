@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../models/mess_market_expense.dart';
-import '../models/mess_meal.dart';
 import '../providers/auth_provider.dart';
 import '../providers/finance_provider.dart';
 import '../providers/settings_provider.dart';

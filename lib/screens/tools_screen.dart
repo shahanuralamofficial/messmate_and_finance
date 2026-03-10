@@ -57,7 +57,7 @@ class ToolsScreen extends StatelessWidget {
                 _buildToolCard(context, Icons.handshake_rounded, isBN ? 'ধার-দেনা' : 'Debts', const Color(0xFFEF4444), '/debts', isDark),
                 _buildToolCard(context, Icons.track_changes_rounded, isBN ? 'সেভিংস গোল' : 'Savings', const Color(0xFF10B981), '/savings', isDark),
                 _buildToolCard(context, Icons.repeat_rounded, isBN ? 'অটো বিল' : 'Recurring', const Color(0xFF3B82F6), '/recurring', isDark),
-                _buildToolCard(context, Icons.security_rounded, isBN ? 'নিরাপত্তা' : 'Security', const Color(0xFF6366F1), '/security', isDark),
+                _buildToolCard(context, Icons.event_note_rounded, isBN ? 'পরিকল্পনা' : 'Planning', const Color(0xFF6366F1), '/planning', isDark),
                 _buildToolCard(context, Icons.ios_share_rounded, isBN ? 'এক্সপোর্ট' : 'Export', const Color(0xFF06B6D4), () => _showExportDialog(context, isBN), isDark),
               ]),
             ),

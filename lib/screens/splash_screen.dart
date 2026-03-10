@@ -94,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
                 const SizedBox(height: 30),
                 Text(
-                  'Finance Manager',
+                  'Messmate & Finance',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,

@@ -238,31 +238,43 @@ class AuthProvider extends ChangeNotifier {
     try {
       final String q = query.trim();
       final String lowQ = q.toLowerCase();
-      final String capQ = q.isNotEmpty ? q[0].toUpperCase() + q.substring(1) : q;
       
-      // Use a Set of variations to avoid redundant queries
-      final Set<String> variations = {q, lowQ, capQ};
       final Map<String, UserModel> resultsMap = {};
 
-      Future<void> performQuery(String field, String searchVal) async {
-        final snap = await _firestore.collection('users')
-            .where(field, isGreaterThanOrEqualTo: searchVal)
-            .where(field, isLessThanOrEqualTo: '$searchVal\uf8ff')
-            .limit(5)
-            .get();
-        for (var doc in snap.docs) {
-          final user = UserModel.fromMap(doc.data());
-          resultsMap[user.uid] = user;
-        }
-      }
+      // ১. ইমেইল দিয়ে সার্চ (সব সময় ছোট হাতের অক্ষরে)
+      final emailSnap = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: lowQ)
+          .where('email', isLessThanOrEqualTo: '$lowQ\uf8ff')
+          .limit(10)
+          .get();
 
-      final List<Future<void>> tasks = [];
-      for (var v in variations) {
-        tasks.add(performQuery('email', v));
-        tasks.add(performQuery('displayName', v));
-      }
+      // ২. নাম দিয়ে সার্চ (যেমন আছে তেমন)
+      final nameSnap = await _firestore.collection('users')
+          .where('displayName', isGreaterThanOrEqualTo: q)
+          .where('displayName', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+          
+      // ৩. নামের প্রথম অক্ষর বড় হাতের দিয়ে সার্চ (অনেক সময় নাম এভাবে সেভ থাকে)
+      String capQ = q.isNotEmpty ? q[0].toUpperCase() + q.substring(1) : q;
+      final capNameSnap = await _firestore.collection('users')
+          .where('displayName', isGreaterThanOrEqualTo: capQ)
+          .where('displayName', isLessThanOrEqualTo: '$capQ\uf8ff')
+          .limit(10)
+          .get();
 
-      await Future.wait(tasks);
+      for (var doc in emailSnap.docs) {
+        final u = UserModel.fromMap(doc.data());
+        resultsMap[u.uid] = u;
+      }
+      for (var doc in nameSnap.docs) {
+        final u = UserModel.fromMap(doc.data());
+        resultsMap[u.uid] = u;
+      }
+      for (var doc in capNameSnap.docs) {
+        final u = UserModel.fromMap(doc.data());
+        resultsMap[u.uid] = u;
+      }
       
       return resultsMap.values.toList();
     } catch (e) {

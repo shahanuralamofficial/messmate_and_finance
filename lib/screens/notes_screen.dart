@@ -150,7 +150,7 @@ class NotesScreen extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.vibrate(); // Fixed: changed warningImpact to vibrate
+                        HapticFeedback.vibrate(); 
                         fp.deleteNote(userId, note.id);
                       },
                       child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent.withValues(alpha: 0.7), size: 20),

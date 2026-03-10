@@ -260,12 +260,8 @@ class AccountsScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       itemBuilder: (ctx) => [
                         PopupMenuItem(
-                          child: const Row(children: [Icon(Icons.edit_rounded, size: 18), SizedBox(width: 8), Text('Edit', style: TextStyle(fontSize: 14))]), 
-                          onTap: () => Future.delayed(Duration.zero, () => _showAddAccount(context, account: account))
-                        ),
-                        PopupMenuItem(
+                          onTap: () => fp.deleteAccount(uid, account.id),
                           child: const Row(children: [Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red, fontSize: 14))]), 
-                          onTap: () => fp.deleteAccount(uid, account.id)
                         ),
                       ],
                     ),

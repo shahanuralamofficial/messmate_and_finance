@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../utils/translations.dart';
 
 class SecurityScreen extends StatefulWidget {
   const SecurityScreen({super.key});
@@ -17,23 +18,23 @@ class _SecurityScreenState extends State<SecurityScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsProvider>(context);
-    final isBN = settings.locale.languageCode == 'bn';
+    final locale = settings.locale.languageCode;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isBN ? 'নিরাপত্তা সেটআপ' : 'Security Setup'),
+        title: Text(AppTranslations.translate('security_setup', locale)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          _buildSectionHeader(isBN ? 'অ্যাপ লক' : 'App Lock'),
+          _buildSectionHeader(AppTranslations.translate('app_lock', locale)),
           SwitchListTile(
-            title: Text(isBN ? 'পিন লক ব্যবহার করুন' : 'Use PIN Lock'),
-            subtitle: Text(isBN ? 'অ্যাপ খুলতে পিন কোড লাগবে' : 'Require PIN to open app'),
+            title: Text(AppTranslations.translate('use_pin_lock', locale)),
+            subtitle: Text(AppTranslations.translate('require_pin', locale)),
             value: settings.pinEnabled,
             onChanged: (val) {
               if (val) {
-                _showSetPinDialog(context, settings, isBN);
+                _showSetPinDialog(context, settings, locale);
               } else {
                 settings.disablePin();
               }
@@ -42,18 +43,18 @@ class _SecurityScreenState extends State<SecurityScreen> {
           if (settings.pinEnabled) ...[
             const Divider(),
             SwitchListTile(
-              title: Text(isBN ? 'বায়োমেট্রিক লক' : 'Biometric Lock'),
-              subtitle: Text(isBN ? 'ফিংগারপ্রিন্ট বা ফেস আইডি' : 'Fingerprint or Face ID'),
+              title: Text(AppTranslations.translate('biometric_lock', locale)),
+              subtitle: Text(AppTranslations.translate('fingerprint_face', locale)),
               value: settings.biometricEnabled,
               onChanged: (val) => settings.setBiometricEnabled(val),
             ),
           ],
           const SizedBox(height: 30),
-          _buildSectionHeader(isBN ? 'ডাটা ব্যাকআপ' : 'Data Backup'),
+          _buildSectionHeader(AppTranslations.translate('data_backup', locale)),
           ListTile(
             leading: const Icon(Icons.cloud_upload_outlined, color: Colors.blue),
-            title: Text(isBN ? 'ক্লাউড সিঙ্ক' : 'Cloud Sync'),
-            subtitle: Text(isBN ? 'আপনার ডাটা ফায়ারবেসে সুরক্ষিত' : 'Your data is synced with Firebase'),
+            title: Text(AppTranslations.translate('cloud_sync', locale)),
+            subtitle: Text(AppTranslations.translate('synced_firebase', locale)),
             trailing: const Icon(Icons.check_circle, color: Colors.green),
           ),
         ],
@@ -71,13 +72,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
     );
   }
 
-  void _showSetPinDialog(BuildContext context, SettingsProvider settings, bool isBN) {
+  void _showSetPinDialog(BuildContext context, SettingsProvider settings, String locale) {
     _pinController.clear();
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(isBN ? 'নতুন পিন সেট করুন' : 'Set New PIN'),
+          title: Text(AppTranslations.translate('set_new_pin', locale)),
           content: TextField(
             controller: _pinController,
             keyboardType: TextInputType.number,
@@ -94,7 +95,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isBN ? 'বাতিল' : 'Cancel')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppTranslations.translate('cancel', locale))),
             ElevatedButton(
               onPressed: () {
                 if (_pinController.text.length >= 4) {
@@ -102,7 +103,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   Navigator.pop(ctx);
                 }
               },
-              child: Text(isBN ? 'নিশ্চিত' : 'Confirm'),
+              child: Text(AppTranslations.translate('save', locale)),
             ),
           ],
         ),

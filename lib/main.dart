@@ -25,6 +25,7 @@ import 'screens/debts_screen.dart';
 import 'screens/savings_screen.dart';
 import 'screens/security_screen.dart';
 import 'screens/recurring_screen.dart';
+import 'screens/planning_screen.dart';
 import 'firebase_options.dart'; 
 
 void main() async {
@@ -63,7 +64,7 @@ class MyApp extends StatelessWidget {
       child: Consumer2<SettingsProvider, ThemeProvider>(
         builder: (context, settings, theme, _) {
           return MaterialApp(
-            title: 'Finance Manager',
+            title: 'Messmate & Finance',
             debugShowCheckedModeBanner: false,
             theme: theme.lightTheme,
             darkTheme: theme.darkTheme,
@@ -96,6 +97,7 @@ class MyApp extends StatelessWidget {
               '/savings': (ctx) => const SavingsScreen(),
               '/security': (ctx) => const SecurityScreen(),
               '/recurring': (ctx) => const RecurringScreen(),
+              '/planning': (ctx) => const PlanningScreen(),
               '/transactions': (ctx) => const Scaffold(body: Center(child: Text('Transactions Screen'))),
             },
           );
