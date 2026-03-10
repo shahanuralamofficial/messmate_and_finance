@@ -34,7 +34,7 @@ class RecurringScreen extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.blue.withOpacity(0.1),
+                      backgroundColor: Colors.blue.withValues(alpha: 0.1),
                       child: const Icon(Icons.repeat, color: Colors.blue),
                     ),
                     title: Text(rt.title, style: const TextStyle(fontWeight: FontWeight.bold)),

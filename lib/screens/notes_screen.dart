@@ -102,7 +102,7 @@ class NotesScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 5)],
       ),
       child: Material(
         color: Colors.transparent,
@@ -153,7 +153,7 @@ class NotesScreen extends StatelessWidget {
                         HapticFeedback.vibrate(); // Fixed: changed warningImpact to vibrate
                         fp.deleteNote(userId, note.id);
                       },
-                      child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent.withOpacity(0.7), size: 20),
+                      child: Icon(Icons.delete_outline_rounded, color: Colors.redAccent.withValues(alpha: 0.7), size: 20),
                     ),
                   ],
                 ),
@@ -170,7 +170,7 @@ class NotesScreen extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 60),
-          Icon(Icons.notes_rounded, size: 80, color: Colors.grey.withOpacity(0.2)),
+          Icon(Icons.notes_rounded, size: 80, color: Colors.grey.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(message, style: TextStyle(color: Colors.grey[500])),
         ],

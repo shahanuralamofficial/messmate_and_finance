@@ -147,7 +147,7 @@ class MarketScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 5)],
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -191,7 +191,7 @@ class MarketScreen extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 60),
-          Icon(Icons.shopping_basket_outlined, size: 80, color: Colors.grey.withOpacity(0.2)),
+          Icon(Icons.shopping_basket_outlined, size: 80, color: Colors.grey.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(message, style: TextStyle(color: Colors.grey[500])),
         ],

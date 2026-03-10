@@ -76,7 +76,7 @@ class ToolsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
+            color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -100,7 +100,7 @@ class ToolsScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, size: 32, color: color),
@@ -139,7 +139,7 @@ class ToolsScreen extends StatelessWidget {
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                 child: const Icon(Icons.description_rounded, color: Colors.green),
               ),
               title: Text(isBN ? 'লেনদেন (CSV)' : 'Transactions (CSV)', style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -152,7 +152,7 @@ class ToolsScreen extends StatelessWidget {
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                 child: const Icon(Icons.handshake_rounded, color: Colors.red),
               ),
               title: Text(isBN ? 'ধার-দেনা (CSV)' : 'Debts (CSV)', style: const TextStyle(fontWeight: FontWeight.w600)),

@@ -52,14 +52,14 @@ class SettingsScreen extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [primaryColor, primaryColor.withOpacity(0.8)],
+                colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: primaryColor.withOpacity(0.3),
+                  color: primaryColor.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -89,7 +89,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 subtitle: Text(
                   authProvider.userModel?.email ?? '',
-                  style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 18),
                 onTap: () => Navigator.pushNamed(context, '/profile'),
@@ -218,7 +218,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
+            color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -240,7 +240,7 @@ class SettingsScreen extends StatelessWidget {
       onTap: onTap,
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: iconColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
         child: Icon(icon, color: iconColor, size: 22),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
@@ -261,7 +261,7 @@ class SettingsScreen extends StatelessWidget {
       onChanged: onChanged,
       secondary: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: iconColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
         child: Icon(icon, color: iconColor, size: 22),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),

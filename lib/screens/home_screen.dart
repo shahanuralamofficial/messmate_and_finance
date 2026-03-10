@@ -54,7 +54,7 @@ class HomeScreen extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        primaryColor.withOpacity(0.2),
+                        primaryColor.withValues(alpha: 0.2),
                         isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                       ],
                     ),
@@ -91,7 +91,7 @@ class HomeScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: primaryColor.withOpacity(0.5), width: 1.5),
+                            border: Border.all(color: primaryColor.withValues(alpha: 0.5), width: 1.5),
                           ),
                           child: CircleAvatar(
                             radius: 18,
@@ -124,12 +124,12 @@ class HomeScreen extends StatelessWidget {
                       end: Alignment.bottomRight,
                       colors: isDark 
                         ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                        : [primaryColor, primaryColor.withOpacity(0.8)],
+                        : [primaryColor, primaryColor.withValues(alpha: 0.8)],
                     ),
                     borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
-                        color: primaryColor.withOpacity(isDark ? 0.1 : 0.3),
+                        color: primaryColor.withValues(alpha: isDark ? 0.1 : 0.3),
                         blurRadius: 24,
                         offset: const Offset(0, 12),
                       )
@@ -140,7 +140,7 @@ class HomeScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -163,7 +163,7 @@ class HomeScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildModernStat(Icons.arrow_downward_rounded, const Color(0xFF34D399), isBangla ? 'আয়' : 'Income', '${settings.currencySymbol}${financeProvider.totalIncome}'),
-                          Container(width: 1, height: 35, color: Colors.white.withOpacity(0.2)),
+                          Container(width: 1, height: 35, color: Colors.white.withValues(alpha: 0.2)),
                           _buildModernStat(Icons.arrow_upward_rounded, const Color(0xFFFB7185), isBangla ? 'ব্যয়' : 'Expense', '${settings.currencySymbol}${financeProvider.totalExpense}'),
                         ],
                       ),
@@ -183,7 +183,7 @@ class HomeScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF1E293B) : Colors.white,
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: Colors.blueAccent.withOpacity(0.1)),
+                      border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,7 +296,7 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6366F1).withOpacity(0.4),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.4),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -356,7 +356,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
+            color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           )
@@ -369,7 +369,7 @@ class HomeScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF6366F1).withOpacity(0.1),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF6366F1), size: 22),
@@ -406,7 +406,7 @@ class HomeScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.03),
+            color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 4),
           )
@@ -417,7 +417,7 @@ class HomeScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(
@@ -465,7 +465,7 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 20),
-          Icon(Icons.receipt_long_rounded, size: 50, color: Colors.grey.withOpacity(0.3)),
+          Icon(Icons.receipt_long_rounded, size: 50, color: Colors.grey.withValues(alpha: 0.3)),
           const SizedBox(height: 12),
           Text(message, style: TextStyle(color: Colors.grey[500], fontSize: 14)),
         ],
@@ -563,7 +563,7 @@ class QuickAddSheet extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(icon, color: color, size: 28),

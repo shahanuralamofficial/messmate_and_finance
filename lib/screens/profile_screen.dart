@@ -162,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [primaryColor.withOpacity(isDark ? 0.3 : 0.2), isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)],
+                        colors: [primaryColor.withValues(alpha: isDark ? 0.3 : 0.2), isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)],
                       ),
                     ),
                   ),
@@ -175,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryColor.withOpacity(0.5), width: 2)),
+                            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryColor.withValues(alpha: 0.5), width: 2)),
                             child: CircleAvatar(
                               radius: 60,
                               backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -361,7 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfessionalTile({required IconData icon, required String title, required String subtitle, required Color iconColor, required bool isDark, VoidCallback? onTap}) {
     return ListTile(
       onTap: onTap,
-      leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: iconColor.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: iconColor, size: 20)),
+      leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), shape: BoxShape.circle), child: Icon(icon, color: iconColor, size: 20)),
       title: Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: isDark ? Colors.white : Colors.black87)),
       subtitle: Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[500])),
       trailing: onTap != null ? const Icon(Icons.call, size: 18, color: Colors.green) : null,

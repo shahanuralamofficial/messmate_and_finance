@@ -218,7 +218,7 @@ class _SignupScreenState extends State<SignupScreen> {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.blueAccent.withOpacity(0.7), size: 20),
+        prefixIcon: Icon(icon, color: Colors.blueAccent.withValues(alpha: 0.7), size: 20),
         suffixIcon: suffix,
         filled: true,
         fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,

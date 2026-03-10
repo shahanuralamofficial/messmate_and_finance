@@ -37,7 +37,7 @@ class DebtsScreen extends StatelessWidget {
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     leading: CircleAvatar(
-                      backgroundColor: isOweMe ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                      backgroundColor: isOweMe ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
                       child: Icon(
                         isOweMe ? Icons.arrow_downward : Icons.arrow_upward,
                         color: isOweMe ? Colors.green : Colors.red,

@@ -44,7 +44,7 @@ class AccountsScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              primaryColor.withOpacity(0.15),
+              primaryColor.withValues(alpha: 0.15),
               isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
             ],
             stops: const [0.0, 0.3],
@@ -105,7 +105,7 @@ class AccountsScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: primaryColor.withOpacity(0.4),
+              color: primaryColor.withValues(alpha: 0.4),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -137,7 +137,7 @@ class AccountsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black45 : Colors.black.withOpacity(0.06),
+            color: isDark ? Colors.black45 : Colors.black.withValues(alpha: 0.06),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -148,7 +148,7 @@ class AccountsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
+              color: primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -180,7 +180,7 @@ class AccountsScreen extends StatelessWidget {
           Container(
             height: 4,
             width: 40,
-            decoration: BoxDecoration(color: primaryColor.withOpacity(0.2), borderRadius: BorderRadius.circular(2)),
+            decoration: BoxDecoration(color: primaryColor.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(2)),
           ),
         ],
       ),
@@ -197,7 +197,7 @@ class AccountsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black26 : Colors.black.withOpacity(0.04),
+            color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -215,7 +215,7 @@ class AccountsScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: accountColor.withOpacity(0.1),
+                    color: accountColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Icon(_getAccountIcon(account.type), color: accountColor, size: 26),
@@ -301,7 +301,7 @@ class AccountsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+              color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[100],
               shape: BoxShape.circle,
             ),
             child: Icon(Icons.account_balance_wallet_outlined, size: 60, color: Colors.grey[400]),

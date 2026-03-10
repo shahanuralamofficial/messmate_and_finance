@@ -106,9 +106,56 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
           _buildMembersTab(financeProvider, authProvider, isBN, isDark, settings.currencySymbol, isManager),
           _buildRequestsTab(financeProvider, authProvider, isBN, isDark, settings.currencySymbol, isManager),
           _buildExpensesTab(financeProvider, isBN, isDark, settings.currencySymbol),
-          _buildLogsTab(financeProvider, isBN, isDark),
+          _buildHistoryTab(financeProvider, isBN, isDark, settings.currencySymbol),
         ],
       ),
+    );
+  }
+
+  Widget _buildHistoryTab(FinanceProvider fp, bool isBN, bool isDark, String symbol) {
+    if (fp.messHistories.isEmpty) {
+      return _buildEmptyState(isBN ? 'ইতিহাস খালি' : 'No history found', isDark);
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: fp.messHistories.length,
+      itemBuilder: (context, index) {
+        final history = fp.messHistories[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          child: ExpansionTile(
+            title: Text(DateFormat('MMMM yyyy').format(history.date), style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text('${isBN ? "মিল রেট" : "Meal Rate"}: $symbol${history.mealRate.toStringAsFixed(2)}'),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildInfoRow(isBN ? 'মোট বাজার' : 'Total Market', '$symbol${history.totalMarketCost}', isDark),
+                    _buildInfoRow(isBN ? 'মোট মিল' : 'Total Meals', history.totalMeals.toString(), isDark),
+                    const Divider(),
+                    ...history.members.map((m) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(m.name),
+                          Text('$symbol${m.totalDue.toStringAsFixed(1)}', style: TextStyle(
+                            color: m.totalDue > 0 ? Colors.redAccent : Colors.greenAccent,
+                            fontWeight: FontWeight.bold,
+                          )),
+                        ],
+                      ),
+                    )),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -156,7 +203,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             )
           : Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
               child: Text(isBN ? 'পেন্ডিং' : 'Pending', style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
             ),
       ),
@@ -182,7 +229,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             )
           : Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
               child: Text(isBN ? 'পেন্ডিং' : 'Pending', style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
             ),
       ),
@@ -210,6 +257,10 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
                     IconButton(
                       onPressed: () => _showMessSettingsDialog(fp, isBN),
                       icon: const Icon(Icons.settings_suggest_outlined, color: Colors.indigo),
+                    ),
+                    IconButton(
+                      onPressed: () => _showSettleMonthDialog(fp, isBN),
+                      icon: const Icon(Icons.calendar_month_outlined, color: Colors.redAccent),
                     ),
                   ],
                 ),
@@ -244,14 +295,14 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blueAccent.withOpacity(0.1),
+          backgroundColor: Colors.blueAccent.withValues(alpha: 0.1),
           child: Text(m.name[0], style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
         ),
         title: Text(m.name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text('${isBN ? "ব্যালেন্স" : "Balance"}: $symbol${currentBalance.toStringAsFixed(1)}'),
         trailing: m.isManager ? Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
           child: Text(isBN ? 'ম্যানেজার' : 'Manager', style: const TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold)),
         ) : null,
         children: [
@@ -361,7 +412,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
       decoration: BoxDecoration(
         gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.indigo.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
+        boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))],
       ),
       child: Column(
         children: [
@@ -392,7 +443,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
   Widget _buildStatItem(String label, String value, Color color) {
     return Column(
       children: [
-        Text(label, style: TextStyle(color: color.withOpacity(0.7), fontSize: 12)),
+        Text(label, style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 12)),
         const SizedBox(height: 4),
         Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
       ],
@@ -417,9 +468,9 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inbox_outlined, size: 60, color: Colors.grey.withOpacity(0.5)),
+          Icon(Icons.inbox_outlined, size: 60, color: Colors.grey.withValues(alpha: 0.5)),
           const SizedBox(height: 10),
-          Text(msg, style: TextStyle(color: Colors.grey.withOpacity(0.8))),
+          Text(msg, style: TextStyle(color: Colors.grey.withValues(alpha: 0.8))),
         ],
       ),
     );
@@ -551,6 +602,30 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
               Navigator.pop(ctx);
             },
             child: Text(isBN ? 'সেভ' : 'Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSettleMonthDialog(FinanceProvider fp, bool isBN) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(isBN ? 'মাস শেষ করুন?' : 'Settle Month?'),
+        content: Text(isBN 
+          ? 'আপনি কি নিশ্চিত যে আপনি এই মাসটি শেষ করতে চান? সমস্ত মিল এবং খরচ মুছে ফেলা হবে এবং ডিউ পরবর্তী মাসে স্থানান্তরিত হবে।' 
+          : 'Are you sure you want to settle this month? All meals and expenses will be cleared, and dues will be carried forward.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isBN ? 'বাতিল' : 'Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              final auth = Provider.of<AuthProvider>(context, listen: false);
+              fp.settleMonth(auth.user!.uid);
+              Navigator.pop(ctx);
+            },
+            child: Text(isBN ? 'নিষ্পত্তি করুন' : 'Settle', style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

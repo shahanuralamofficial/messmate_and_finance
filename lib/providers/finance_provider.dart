@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' hide Transaction;
 import 'package:uuid/uuid.dart';
-import '../services/notification_service.dart';
 import '../models/account.dart';
 import '../models/note.dart';
 import '../models/transaction.dart';
@@ -13,6 +12,7 @@ import '../models/mess_market_expense.dart';
 import '../models/mess_action_log.dart';
 import '../models/mess_meal_plan.dart';
 import '../models/mess_info.dart';
+import '../models/mess_history.dart';
 import '../models/budget.dart';
 import '../models/debt.dart';
 import '../models/savings_goal.dart';
@@ -30,6 +30,7 @@ class FinanceProvider extends ChangeNotifier {
   List<MessMarketExpense> _messMarketExpenses = [];
   List<MessActionLog> _messLogs = [];
   List<MessMealPlan> _messMealPlans = [];
+  List<MessHistory> _messHistories = [];
   MessInfo? _messInfo;
   
   // New Lists
@@ -50,6 +51,7 @@ class FinanceProvider extends ChangeNotifier {
   StreamSubscription? _messMarketSub;
   StreamSubscription? _messLogsSub;
   StreamSubscription? _messMealPlanSub;
+  StreamSubscription? _messHistorySub;
   StreamSubscription? _budgetSub;
   StreamSubscription? _debtSub;
   StreamSubscription? _savingsSub;
@@ -66,6 +68,7 @@ class FinanceProvider extends ChangeNotifier {
   List<MessMarketExpense> get messMarketExpenses => _messMarketExpenses;
   List<MessActionLog> get messLogs => _messLogs;
   List<MessMealPlan> get messMealPlans => _messMealPlans;
+  List<MessHistory> get messHistories => _messHistories;
   MessInfo? get messInfo => _messInfo;
   
   List<Budget> get budgets => _budgets;
@@ -183,6 +186,12 @@ class FinanceProvider extends ChangeNotifier {
         notifyListeners();
       });
 
+      _messHistorySub = _firestore.collection('users').doc(userId).collection('mess_history')
+          .orderBy('date', descending: true).snapshots().listen((snap) {
+        _messHistories = snap.docs.map((doc) => MessHistory.fromMap(doc.data())).toList();
+        notifyListeners();
+      });
+
       _budgetSub = _firestore.collection('users').doc(userId).collection('budgets')
           .snapshots().listen((snap) {
         _budgets = snap.docs.map((doc) => Budget.fromMap(doc.data())).toList();
@@ -226,6 +235,7 @@ class FinanceProvider extends ChangeNotifier {
     _messMarketSub?.cancel();
     _messLogsSub?.cancel();
     _messMealPlanSub?.cancel();
+    _messHistorySub?.cancel();
     _budgetSub?.cancel();
     _debtSub?.cancel();
     _savingsSub?.cancel();
@@ -397,9 +407,11 @@ class FinanceProvider extends ChangeNotifier {
     batch.update(newRef, {'isManager': true});
     
     await batch.commit();
+    await _addMessLog(userId, userId, 'System', 'Manager Transferred', 'Role transferred to a new member');
   }
 
   Future<void> deleteMessMember(String userId, String id) async {
+    final member = _messMembers.firstWhere((m) => m.id == id);
     await _firestore.collection('users').doc(userId).collection('mess_members').doc(id).delete();
     // Also delete their meals
     final meals = await _firestore.collection('users').doc(userId).collection('mess_meals').where('memberId', isEqualTo: id).get();
@@ -408,6 +420,7 @@ class FinanceProvider extends ChangeNotifier {
       batch.delete(doc.reference);
     }
     await batch.commit();
+    await _addMessLog(userId, userId, 'Manager', 'Member Deleted', 'Removed member: ${member.name}');
   }
 
   Future<void> addMessMeal(MessMeal meal) async {
@@ -420,6 +433,8 @@ class FinanceProvider extends ChangeNotifier {
     batch.update(memberRef, {'totalMeals': FieldValue.increment(meal.count)});
 
     await batch.commit();
+    final member = _messMembers.firstWhere((m) => m.id == meal.memberId);
+    await _addMessLog(meal.userId, meal.userId, 'Manager', 'Meal Added', 'Added ${meal.count} meals for ${member.name}');
   }
 
   Future<void> deleteMessMeal(MessMeal meal) async {
@@ -432,6 +447,8 @@ class FinanceProvider extends ChangeNotifier {
     batch.update(memberRef, {'totalMeals': FieldValue.increment(-meal.count)});
 
     await batch.commit();
+    final member = _messMembers.firstWhere((m) => m.id == meal.memberId);
+    await _addMessLog(meal.userId, meal.userId, 'Manager', 'Meal Deleted', 'Removed ${meal.count} meals from ${member.name}');
   }
 
   Future<void> addMessMarketCost(String userId, String memberId, double amount, String description, String actorName, {bool isManager = false}) async {
@@ -540,6 +557,7 @@ class FinanceProvider extends ChangeNotifier {
     await _firestore.collection('users').doc(userId).collection('mess_meal_plans').doc(planId).update({
       'status': MealPlanStatus.rejected.name
     });
+    await _addMessLog(userId, userId, 'Manager', 'Meal Rejected', 'Meal plan request rejected');
   }
 
   Future<void> toggleMealPlan(String userId, String memberId, DateTime date, bool isEnabled, String actorName) async {
@@ -606,6 +624,26 @@ class FinanceProvider extends ChangeNotifier {
     final batch = _firestore.batch();
     final mRate = mealRate;
 
+    // 1. Save History Snapshot
+    final historyId = const Uuid().v4();
+    final history = MessHistory(
+      id: historyId,
+      userId: userId,
+      date: DateTime.now(),
+      totalMeals: totalMessMeals,
+      totalMarketCost: totalMessMarketCost,
+      mealRate: mRate,
+      members: _messMembers.map((m) => MemberSnapshot(
+        memberId: m.id,
+        name: m.name,
+        totalMeals: m.totalMeals,
+        totalCost: m.totalMeals * mRate,
+        totalDue: (m.monthlyRent + m.wifiBill + m.electricityBill + m.otherBills + (m.totalMeals * mRate) + m.previousDue) - m.initialDeposit,
+      )).toList(),
+    );
+    batch.set(_firestore.collection('users').doc(userId).collection('mess_history').doc(historyId), history.toMap());
+
+    // 2. Reset and Carry Over
     for (var member in _messMembers) {
       final double cost = (member.totalMeals * mRate);
       final double totalDue = (member.monthlyRent + member.wifiBill + member.electricityBill + member.otherBills + cost + member.previousDue) - member.initialDeposit;
