@@ -189,14 +189,14 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blueAccent.withValues(alpha: 0.1),
-          child: Text(m.name[0], style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.blueAccent.withOpacity(0.1),
+          child: Text(m.name.isNotEmpty ? m.name[0] : '?', style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
         ),
         title: Text(m.name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text('${isBN ? "ব্যালেন্স" : "Balance"}: $symbol${currentBalance.toStringAsFixed(1)}'),
         trailing: m.isManager ? Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
           child: Text(isBN ? 'ম্যানেজার' : 'Manager', style: const TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold)),
         ) : null,
         children: [
@@ -289,7 +289,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             )
           : Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
               child: Text(isBN ? 'পেন্ডিং' : 'Pending', style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
             ),
       ),
@@ -315,7 +315,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
             )
           : Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
               child: Text(isBN ? 'পেন্ডিং' : 'Pending', style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
             ),
       ),
@@ -400,7 +400,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
       decoration: BoxDecoration(
         gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4F46E5)]),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.indigo.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))],
+        boxShadow: [BoxShadow(color: Colors.indigo.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))],
       ),
       child: Column(
         children: [
@@ -431,7 +431,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
   Widget _buildStatItem(String label, String value, Color color) {
     return Column(
       children: [
-        Text(label, style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 12)),
+        Text(label, style: TextStyle(color: color.withOpacity(0.7), fontSize: 12)),
         const SizedBox(height: 4),
         Text(value, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
       ],
@@ -456,7 +456,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.group_add_outlined, size: 80, color: Colors.blueAccent.withValues(alpha: 0.3)),
+          Icon(Icons.group_add_outlined, size: 80, color: Colors.blueAccent.withOpacity(0.3)),
           const SizedBox(height: 16),
           Text(msg, style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 16)),
           if (onAction != null) ...[
