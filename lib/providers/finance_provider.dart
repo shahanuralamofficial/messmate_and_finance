@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' hide Transaction;
 import 'package:uuid/uuid.dart';
+import '../services/notification_service.dart';
 import '../models/account.dart';
 import '../models/note.dart';
 import '../models/transaction.dart';
@@ -121,7 +122,6 @@ class FinanceProvider extends ChangeNotifier {
     _cancelSubscriptions();
 
     try {
-      // ... existing listeners ...
       _accountsSub = _firestore.collection('users').doc(userId).collection('accounts')
           .snapshots().listen((snap) {
         _accounts = snap.docs.map((doc) => Account.fromMap(doc.data())).toList();
@@ -370,7 +370,8 @@ class FinanceProvider extends ChangeNotifier {
 
   Future<void> updateMessInfo(String name, String address, String phone) async {
     if (_messMembers.isEmpty) return;
-    final managerId = _messMembers.firstWhere((m) => m.isManager).userId;
+    final manager = _messMembers.firstWhere((m) => m.isManager, orElse: () => _messMembers.first);
+    final managerId = manager.userId;
     
     final info = MessInfo(
       id: 'details',
@@ -382,19 +383,6 @@ class FinanceProvider extends ChangeNotifier {
     await _firestore.collection('users').doc(managerId).collection('mess_info').doc('details').set(info.toMap());
   }
 
-  Future<void> _addMessLog(String userId, String actorId, String actorName, String action, String details) async {
-    final logId = const Uuid().v4();
-    final log = MessActionLog(
-      id: logId,
-      messId: userId,
-      actorId: actorId,
-      actorName: actorName,
-      action: action,
-      details: details,
-      timestamp: DateTime.now(),
-    );
-    await _firestore.collection('users').doc(userId).collection('mess_logs').doc(logId).set(log.toMap());
-  }
 
   Future<void> updateMessMember(MessMember member) async {
     await _firestore.collection('users').doc(member.userId).collection('mess_members').doc(member.id).update(member.toMap());
@@ -409,7 +397,6 @@ class FinanceProvider extends ChangeNotifier {
     batch.update(newRef, {'isManager': true});
     
     await batch.commit();
-    await _addMessLog(userId, userId, 'System', 'Manager Transferred', 'Role transferred to a new member');
   }
 
   Future<void> deleteMessMember(String userId, String id) async {
@@ -625,8 +612,6 @@ class FinanceProvider extends ChangeNotifier {
       
       final memberRef = _firestore.collection('users').doc(userId).collection('mess_members').doc(member.id);
       
-      // If not paid, current balance/due becomes previousDue for next month
-      // Reset meals and deposits for new month
       batch.update(memberRef, {
         'previousDue': totalDue,
         'initialDeposit': 0.0,
@@ -640,7 +625,6 @@ class FinanceProvider extends ChangeNotifier {
       });
     }
 
-    // Clear meals and market expenses for the mess
     final meals = await _firestore.collection('users').doc(userId).collection('mess_meals').get();
     for (var doc in meals.docs) {
       batch.delete(doc.reference);
@@ -658,20 +642,6 @@ class FinanceProvider extends ChangeNotifier {
   Future<void> depositMoney(String userId, String memberId, double amount) async {
     final memberRef = _firestore.collection('users').doc(userId).collection('mess_members').doc(memberId);
     await memberRef.update({'initialDeposit': FieldValue.increment(amount)});
-  }
-
-  Future<void> _addMessLog(String userId, String actorId, String actorName, String action, String details) async {
-    final logId = const Uuid().v4();
-    final log = MessActionLog(
-      id: logId,
-      messId: userId,
-      actorId: actorId,
-      actorName: actorName,
-      action: action,
-      details: details,
-      timestamp: DateTime.now(),
-    );
-    await _firestore.collection('users').doc(userId).collection('mess_logs').doc(logId).set(log.toMap());
   }
 
   // Optimized methods for atomic updates
@@ -759,5 +729,19 @@ class FinanceProvider extends ChangeNotifier {
   void dispose() {
     _cancelSubscriptions();
     super.dispose();
+  }
+
+  Future<void> _addMessLog(String userId, String actorId, String actorName, String action, String details) async {
+    final logId = const Uuid().v4();
+    final log = MessActionLog(
+      id: logId,
+      messId: userId,
+      actorId: actorId,
+      actorName: actorName,
+      action: action,
+      details: details,
+      timestamp: DateTime.now(),
+    );
+    await _firestore.collection('users').doc(userId).collection('mess_logs').doc(logId).set(log.toMap());
   }
 }

@@ -28,7 +28,13 @@ class NotificationService {
         android: initializationSettingsAndroid,
       );
 
-      await _localNotifications.initialize(initializationSettings);
+      // Using correct signature for flutter_local_notifications: ^21.0.0
+      await _localNotifications.initialize(
+        settings: initializationSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse response) {
+          // Handle notification tap
+        },
+      );
 
       // Setup foreground notification handling
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -37,10 +43,10 @@ class NotificationService {
 
         if (notification != null && android != null) {
           _localNotifications.show(
-            notification.hashCode,
-            notification.title,
-            notification.body,
-            const NotificationDetails(
+            id: notification.hashCode,
+            title: notification.title,
+            body: notification.body,
+            notificationDetails: const NotificationDetails(
               android: AndroidNotificationDetails(
                 'mess_updates',
                 'Mess Updates',

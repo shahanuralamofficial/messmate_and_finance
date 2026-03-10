@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/auth_button.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -43,6 +44,9 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (success && mounted) {
+      if (authProvider.user != null) {
+        NotificationService.saveTokenToDatabase(authProvider.user!.uid);
+      }
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
