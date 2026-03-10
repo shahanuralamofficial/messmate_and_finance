@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +11,7 @@ import '../models/mess_member.dart';
 import '../models/mess_market_expense.dart';
 import '../models/mess_info.dart';
 import '../utils/mess_report_helper.dart';
+import '../widgets/bottom_nav_bar.dart';
 
 class MessScreen extends StatefulWidget {
   const MessScreen({super.key});
@@ -116,6 +118,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
           _buildHistoryTab(financeProvider, isBN, isDark, settings.currencySymbol),
         ],
       ),
+      bottomNavigationBar: const BottomNavBar(currentIndex: 3),
     )
     );
   }
@@ -512,6 +515,8 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
     List<dynamic> searchResults = [];
     bool isSearching = false;
 
+    Timer? debounce;
+
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -532,17 +537,20 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
                       prefixIcon: const Icon(Icons.search),
                       suffixIcon: isSearching ? const SizedBox(width: 20, height: 20, child: Padding(padding: EdgeInsets.all(10), child: CircularProgressIndicator(strokeWidth: 2))) : null,
                     ),
-                    onChanged: (val) async {
-                      if (val.length > 2) {
-                        setState(() => isSearching = true);
-                        final results = await auth.searchUsers(val);
-                        setState(() {
-                          searchResults = results;
-                          isSearching = false;
-                        });
-                      } else {
-                        setState(() => searchResults = []);
-                      }
+                    onChanged: (val) {
+                      if (debounce?.isActive ?? false) debounce?.cancel();
+                      debounce = Timer(const Duration(milliseconds: 500), () async {
+                        if (val.isNotEmpty) {
+                          setState(() => isSearching = true);
+                          final results = await auth.searchUsers(val);
+                          setState(() {
+                            searchResults = results;
+                            isSearching = false;
+                          });
+                        } else {
+                          setState(() => searchResults = []);
+                        }
+                      });
                     },
                   ),
                   
