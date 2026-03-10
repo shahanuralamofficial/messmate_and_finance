@@ -339,13 +339,17 @@ class FinanceProvider extends ChangeNotifier {
   // Mess Management Methods
   Future<void> addMessMember(String managerId, String name, double deposit) async {
     final id = const Uuid().v4();
+    // If no members exist yet, the first one becomes manager automatically
+    final bool isFirstMember = _messMembers.isEmpty;
+    
     final member = MessMember(
       id: id,
       userId: managerId,
       messId: managerId,
+      appUserId: isFirstMember ? managerId : null, // Link manager to current user
       name: name,
       initialDeposit: deposit,
-      isManager: false,
+      isManager: isFirstMember,
     );
     await _firestore.collection('users').doc(managerId).collection('mess_members').doc(id).set(member.toMap());
     await _addMessLog(managerId, managerId, 'Manager', 'Member Added', 'Added member: $name');

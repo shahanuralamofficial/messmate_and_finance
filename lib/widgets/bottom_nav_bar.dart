@@ -46,22 +46,16 @@ class BottomNavBar extends StatelessWidget {
             onTap: (index) {
               if (index == currentIndex) return;
               HapticFeedback.lightImpact();
-              switch (index) {
-                case 0:
-                  Navigator.pushReplacementNamed(context, '/home');
-                  break;
-                case 1:
-                  Navigator.pushReplacementNamed(context, '/accounts');
-                  break;
-                case 2:
-                  Navigator.pushReplacementNamed(context, '/tools');
-                  break;
-                case 3:
-                  Navigator.pushReplacementNamed(context, '/mess');
-                  break;
-                case 4:
-                  Navigator.pushReplacementNamed(context, '/settings');
-                  break;
+              
+              // Define routes
+              final routes = ['/home', '/accounts', '/tools', '/mess', '/settings'];
+              final targetRoute = routes[index];
+
+              // If going home, clear stack. If going elsewhere from home, just push.
+              if (index == 0) {
+                Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+              } else {
+                Navigator.pushReplacementNamed(context, targetRoute);
               }
             },
             items: [

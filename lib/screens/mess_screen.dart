@@ -52,10 +52,17 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
       (m) => m.appUserId == authProvider.user?.uid, 
       orElse: () => MessMember(id: '', name: '', messId: '', isManager: false, userId: '')
     );
-    final bool isManager = currentMember.isManager;
+    // If no members exist, allow the user to add the first one
+    final bool isManager = currentMember.isManager || financeProvider.messMembers.isEmpty;
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.pushReplacementNamed(context, '/home');
+      },
+      child: Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: Text(isBN ? 'মেস ম্যানেজার' : 'Mess Manager', style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -109,6 +116,7 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
           _buildHistoryTab(financeProvider, isBN, isDark, settings.currencySymbol),
         ],
       ),
+    )
     );
   }
 
@@ -268,7 +276,12 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
           ),
           const SizedBox(height: 10),
           if (fp.messMembers.isEmpty)
-            _buildEmptyState(isBN ? 'কোন সদস্য নেই' : 'No members found', isDark)
+            _buildEmptyState(
+              isBN ? 'আপনার মেসে কোন সদস্য নেই' : 'No members in your mess', 
+              isDark,
+              onAction: () => _showAddMemberDialog(context, auth.user!.uid, fp, isBN),
+              actionLabel: isBN ? 'প্রথম সদস্য যোগ করুন' : 'Add First Member',
+            )
           else
             ListView.builder(
               shrinkWrap: true,
@@ -463,14 +476,28 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildEmptyState(String msg, bool isDark) {
+  Widget _buildEmptyState(String msg, bool isDark, {VoidCallback? onAction, String? actionLabel}) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inbox_outlined, size: 60, color: Colors.grey.withValues(alpha: 0.5)),
-          const SizedBox(height: 10),
-          Text(msg, style: TextStyle(color: Colors.grey.withValues(alpha: 0.8))),
+          Icon(Icons.group_add_outlined, size: 80, color: Colors.blueAccent.withValues(alpha: 0.3)),
+          const SizedBox(height: 16),
+          Text(msg, style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 16)),
+          if (onAction != null) ...[
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: onAction,
+              icon: const Icon(Icons.add),
+              label: Text(actionLabel ?? 'Action'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
         ],
       ),
     );
