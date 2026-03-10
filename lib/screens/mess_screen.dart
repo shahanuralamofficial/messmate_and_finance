@@ -506,29 +506,120 @@ class _MessScreenState extends State<MessScreen> with SingleTickerProviderStateM
   void _showAddMemberDialog(BuildContext context, String managerId, FinanceProvider fp, bool isBN) {
     final nameController = TextEditingController();
     final depositController = TextEditingController();
+    final searchController = TextEditingController();
+    String? selectedAppUserId;
+    String? selectedEmail;
+    List<dynamic> searchResults = [];
+    bool isSearching = false;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(isBN ? 'নতুন সদস্য' : 'Add Member'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameController, decoration: InputDecoration(hintText: isBN ? 'সদস্যের নাম' : 'Member Name')),
-            TextField(controller: depositController, decoration: InputDecoration(hintText: isBN ? 'প্রাথমিক জমা' : 'Initial Deposit'), keyboardType: TextInputType.number),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isBN ? 'বাতিল' : 'Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty) {
-                fp.addMessMember(managerId, nameController.text, double.tryParse(depositController.text) ?? 0.0);
-                Navigator.pop(ctx);
-              }
-            },
-            child: Text(isBN ? 'যোগ করুন' : 'Add'),
-          ),
-        ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          final auth = Provider.of<AuthProvider>(context, listen: false);
+          
+          return AlertDialog(
+            title: Text(isBN ? 'নতুন সদস্য' : 'Add Member'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Search Field
+                  TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: isBN ? 'নাম বা ইমেইল দিয়ে খুঁজুন' : 'Search by name/email',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: isSearching ? const SizedBox(width: 20, height: 20, child: Padding(padding: EdgeInsets.all(10), child: CircularProgressIndicator(strokeWidth: 2))) : null,
+                    ),
+                    onChanged: (val) async {
+                      if (val.length > 2) {
+                        setState(() => isSearching = true);
+                        final results = await auth.searchUsers(val);
+                        setState(() {
+                          searchResults = results;
+                          isSearching = false;
+                        });
+                      } else {
+                        setState(() => searchResults = []);
+                      }
+                    },
+                  ),
+                  
+                  if (searchResults.isNotEmpty)
+                    Container(
+                      height: 150,
+                      width: double.maxFinite,
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: searchResults.length,
+                        itemBuilder: (context, index) {
+                          final user = searchResults[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: user.photoURL != null ? NetworkImage(user.photoURL!) : null,
+                              child: user.photoURL == null ? const Icon(Icons.person) : null,
+                            ),
+                            title: Text(user.displayName ?? 'No Name'),
+                            subtitle: Text(user.email),
+                            onTap: () {
+                              setState(() {
+                                nameController.text = user.displayName ?? '';
+                                selectedAppUserId = user.uid;
+                                selectedEmail = user.email;
+                                searchResults = [];
+                                searchController.clear();
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  
+                  const Divider(height: 30),
+                  
+                  TextField(
+                    controller: nameController, 
+                    decoration: InputDecoration(
+                      labelText: isBN ? 'সদস্যের নাম' : 'Member Name',
+                      helperText: selectedAppUserId != null ? (isBN ? 'অ্যাপ ব্যবহারকারী সংযুক্ত' : 'App user linked') : null,
+                      helperStyle: const TextStyle(color: Colors.green),
+                    )
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: depositController, 
+                    decoration: InputDecoration(labelText: isBN ? 'প্রাথমিক জমা' : 'Initial Deposit'), 
+                    keyboardType: TextInputType.number
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(isBN ? 'বাতিল' : 'Cancel')),
+              ElevatedButton(
+                onPressed: () {
+                  if (nameController.text.isNotEmpty) {
+                    fp.addMessMember(
+                      managerId, 
+                      nameController.text, 
+                      double.tryParse(depositController.text) ?? 0.0,
+                      appUserId: selectedAppUserId,
+                      email: selectedEmail,
+                    );
+                    Navigator.pop(ctx);
+                  }
+                },
+                child: Text(isBN ? 'যোগ করুন' : 'Add'),
+              ),
+            ],
+          );
+        }
       ),
     );
   }

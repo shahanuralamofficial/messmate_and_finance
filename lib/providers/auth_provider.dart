@@ -22,19 +22,87 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider() {
     _auth.authStateChanges().listen(_onAuthStateChanged);
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
   }
+}
 
   Future<void> _onAuthStateChanged(User? user) async {
     _user = user;
     if (user != null) {
       if (!_isLoading) {
         await loadUserData(user.uid);
-      }
+        Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
     } else {
       _userModel = null;
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
-    notifyListeners();
   }
+}
+    notifyListeners();
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   Future<void> loadUserData(String uid) async {
     try {
@@ -44,13 +112,81 @@ class AuthProvider extends ChangeNotifier {
       } else {
         if (_auth.currentUser != null) {
           await _createUserDocument(uid);
-        }
-      }
+          Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
+        Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
     } catch (e) {
       debugPrint('Error loading user data: $e');
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
-    notifyListeners();
   }
+}
+    notifyListeners();
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   Future<void> _createUserDocument(String uid, {String? displayName}) async {
     final user = _auth.currentUser;
@@ -76,7 +212,24 @@ class AuthProvider extends ChangeNotifier {
     await _firestore.collection('users').doc(uid).set(userModel.toMap());
     _userModel = userModel;
     notifyListeners();
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
   }
+}
 
   Future<bool> signInWithEmail(String email, String password) async {
     _setLoading(true);
@@ -88,7 +241,24 @@ class AuthProvider extends ChangeNotifier {
           'lastLogin': DateTime.now().toIso8601String(),
         }, SetOptions(merge: true));
         await loadUserData(result.user!.uid); 
-      }
+        Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
       _setLoading(false);
       return true;
     } on FirebaseAuthException catch (e) {
@@ -99,8 +269,42 @@ class AuthProvider extends ChangeNotifier {
       _error = e.toString();
       _setLoading(false);
       return false;
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
   }
+}
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   Future<bool> signUpWithEmail(String email, String password, String? name) async {
     _setLoading(true);
@@ -110,9 +314,43 @@ class AuthProvider extends ChangeNotifier {
       if (result.user != null) {
         if (name != null) {
           await result.user!.updateDisplayName(name);
-        }
+          Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
         await _createUserDocument(result.user!.uid, displayName: name);
-      }
+        Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
       _setLoading(false);
       return true;
     } on FirebaseAuthException catch (e) {
@@ -123,15 +361,66 @@ class AuthProvider extends ChangeNotifier {
       _error = e.toString();
       _setLoading(false);
       return false;
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
   }
+}
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   Future<void> signOut() async {
     await _auth.signOut();
     _user = null;
     _userModel = null;
     notifyListeners();
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
   }
+}
 
   Future<bool> resetPassword(String email) async {
     try {
@@ -140,8 +429,42 @@ class AuthProvider extends ChangeNotifier {
     } catch (e) {
       _error = e.toString();
       return false;
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
   }
+}
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   void _handleAuthError(FirebaseAuthException e) {
     switch (e.code) {
@@ -151,18 +474,86 @@ class AuthProvider extends ChangeNotifier {
       case 'weak-password': _error = 'Password is too weak'; break;
       case 'invalid-email': _error = 'Invalid email address'; break;
       default: _error = e.message ?? 'Authentication error';
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
   }
+}
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
   }
+}
 
   void _clearError() {
     _error = null;
     notifyListeners();
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
   }
+}
 
   Future<void> updateUserSettings(Map<String, dynamic> data) async {
     if (_user == null) return;
@@ -171,8 +562,42 @@ class AuthProvider extends ChangeNotifier {
       await loadUserData(_user!.uid);
     } catch (e) {
       debugPrint('Error updating user settings: $e');
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
   }
+}
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   Future<bool> updateProfile(Map<String, dynamic> data) async {
     if (_user == null) return false;
@@ -181,7 +606,24 @@ class AuthProvider extends ChangeNotifier {
       await _firestore.collection('users').doc(_user!.uid).update(data);
       if (data.containsKey('displayName')) {
         await _user!.updateDisplayName(data['displayName']);
-      }
+        Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
       await loadUserData(_user!.uid);
       _setLoading(false);
       return true;
@@ -189,20 +631,105 @@ class AuthProvider extends ChangeNotifier {
       _error = e.toString();
       _setLoading(false);
       return false;
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
   }
+}
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   Future<UserModel?> getUserById(String uid) async {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
       if (doc.exists) {
         return UserModel.fromMap(doc.data()!);
-      }
+        Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
     } catch (e) {
       debugPrint('Error fetching user: $e');
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
-    return null;
   }
+}
+    return null;
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
 
   Future<bool> updateProfilePicture(File imageFile) async {
     if (_user == null) return false;
@@ -220,11 +747,79 @@ class AuthProvider extends ChangeNotifier {
         await loadUserData(_user!.uid);
         _setLoading(false);
         return true;
-      }
+        Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
     } catch (e) {
       _error = e.toString();
+      Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
     }
+  }
+}
     _setLoading(false);
     return false;
+    Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
+  }
+}
+  Future<List<UserModel>> searchUsers(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      final q = query.toLowerCase();
+      // Search by email (exact or prefix) or display name
+      final snapshot = await _firestore.collection('users')
+          .where('email', isGreaterThanOrEqualTo: q)
+          .where('email', isLessThanOrEqualTo: '$q\uf8ff')
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
+    } catch (e) {
+      debugPrint('Error searching users: $e');
+      return [];
+    }
   }
 }
